@@ -170,19 +170,19 @@ enabled = true
 # ==============================================================================
 [dotfiles]
 # --- Self-managing Mise config ---
-"~/.config/mise/config.toml"        = { source = "config.toml", mode = "symlink" }
-"~/.config/mise/config.work.toml"   = { source = "config.work.toml", mode = "symlink" }
+#"~/.config/mise/config.toml"        = { source = "config.toml", mode = "symlink" }
+#"~/.config/mise/config.work.toml"   = { source = "config.work.toml", mode = "symlink" }
 
 # --- Static Configuration Files ---
-"~/.config/atuin/config.toml"           = { source = ".config/atuin/config.toml", mode = "symlink" }
-"~/.config/bat"                         = { source = ".config/bat", mode = "symlink" }
-"~/.config/tealdeer/config.toml"        = { source = ".config/tealdeer/config.toml", mode = "symlink" }
+#"~/.config/atuin/config.toml"           = { source = ".config/atuin/config.toml", mode = "symlink" }
+#"~/.config/bat"                         = { source = ".config/bat", mode = "symlink" }
+#"~/.config/tealdeer/config.toml"        = { source = ".config/tealdeer/config.toml", mode = "symlink" }
 
 # --- Dynamic Templates ---
-"~/.zshrc"                              = { source = "zshrc.tera", mode = "template" }
-"~/.zprofile"                           = { source = "zprofile.tera", mode = "template" }
-"~/.gitconfig"                          = { source = "gitconfig.tera", mode = "template" }
-"~/.bashrc"                             = { source = "bashrc.tera", mode = "template" }
+#"~/.zshrc"                              = { source = "zshrc.tera", mode = "template" }
+#"~/.zprofile"                           = { source = "zprofile.tera", mode = "template" }
+#"~/.gitconfig"                          = { source = "gitconfig.tera", mode = "template" }
+#"~/.bashrc"                             = { source = "bashrc.tera", mode = "template" }
 
 [dotfiles."vscode/settings.json"]
 source = ".config/vscode/settings.tera"
@@ -272,18 +272,18 @@ fi
 # ==============================================================================
 # PHASE 19: FINAL HOOK (mise bootstrap final-hook)
 # ==============================================================================
-[bootstrap.hooks.final]
-run = """
-#!/usr/bin/env bash
-set -e
+# [bootstrap.hooks.final]
+# run = """
+# #!/usr/bin/env bash
+# set -e
 
-# Set dotfiles repository origin for enabling sync
-mise dot origin set it@github.com:nikokultalahti/mise-bootstrap.git --sync manual
-echo "[✓] Dotfiles origin set with automatic sync enabled"
-fi
+# # Set dotfiles repository origin for enabling sync
+# mise dot origin set it@github.com:nikokultalahti/mise-bootstrap.git --sync manual
+# echo "[✓] Dotfiles origin set with automatic sync enabled"
+# fi
 
-echo ""
-echo "=================================================================="
-echo "🎉 Bootstrap complete! Please reboot if required."
-echo "=================================================================="
-"""
+# echo ""
+# echo "=================================================================="
+# echo "🎉 Bootstrap complete! Please reboot if required."
+# echo "=================================================================="
+# """
