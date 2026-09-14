@@ -69,8 +69,36 @@ fi
 "flatpak:org.mozilla.thunderbird_esr" = "latest"
 "flatpak:org.libreoffice.LibreOffice" = "latest"
 "flatpak:dev.qwery.AddWater" = "latest"
-"flatpak:dev.zed.Zed" = "latest"
 "flatpak:io.github.qwersyk.Newelle" = "latest"
+"flatpak:app.drey.Dialect" = "latest"
+"flatpak:be.alexandervanhee.gradia" = "latest"
+"flatpak:cafe.avery.Delfin" = "latest"
+"flatpak:com.github.PintaProject.Pinta" = "latest"
+"flatpak:com.github.jeromerobert.pdfarranger" = "latest"
+"flatpak:com.nextcloud.desktopclient.nextcloud" = "latest"
+"flatpak:com.yubico.yubioath" = "latest"
+"flatpak:de.haeckerfelix.Fragments" = "latest"
+"flatpak:de.schmidhuberj.tubefeeder" = "latest" # Pipeline
+"flatpak:org.nickvision.tubeconverter" = "latest" # Parabolic
+"flatpak:dev.geopjr.Tuba" = "latest"
+"flatpak:io.github.alainm23.planify" = "latest"
+"flatpak:md.obsidian.Obsidian" = "latest"
+"flatpak:org.gnome.World.Iotas" = "latest"
+"flatpak:org.gnome.gitlab.cheywood.Pulp" = "latest"
+"flatpak:org.gnome.gitlab.somas.Apostrophe" = "latest"
+"flatpak:org.signal.Signal" = "latest"
+"flatpak:re.sonny.Eloquent" = "latest"
+"flatpak:app.fotema.Fotema" = "latest"
+"flatpak:com.github.maoschanz.drawing" = "latest"
+"flatpak:io.gitlab.adhami3310.Converter" = "latest"
+"flatpak:page.codeberg.censor.Censor" = "latest"
+
+# --- Dev Tools ---
+"flatpak:dev.zed.Zed" = "latest"
+"flatpak:re.sonny.Commit" = "latest" 
+"flatpak:me.iepure.devtoolbox" = "latest"
+"flatpak:com.mardojai.ForgeSparks" = "latest"
+"flatpak:de.wwwtech.gitte" = "latest"
 
 # Hook running immediately after packages are installed:
 # 1. Configures GNOME Software for automatic background Flatpak updates.
@@ -176,16 +204,8 @@ television = "latest"
 yq = "latest"
 yt-dlp = "latest"
 zoxide = "latest"
-
-k9s = "latest"
-kubectl = "latest"
-kubectx = "latest"
-kustomize = "latest"
-talosctl = "latest"
-
-"github:block/goose" = "latest"
-"github:timrogers/litra-rs" = "latest"
 "github:timrogers/litra-autotoggle" = "latest"
+"github:aaif-goose/goose" = "latest"
 
 # ==============================================================================
 # PHASE 18: DECRYPT 
