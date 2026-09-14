@@ -170,24 +170,19 @@ enabled = true
 # ==============================================================================
 [dotfiles]
 # --- Self-managing Mise config ---
-"~/.config/mise/config.toml"        = { source = "config.toml", mode = "symlink" }
-"~/.config/mise/config.work.toml"   = { source = "config.work.toml", mode = "symlink" }
+#"~/.config/mise/config.toml"        = { source = "config.toml", mode = "symlink" }
+#"~/.config/mise/config.work.toml"   = { source = "config.work.toml", mode = "symlink" }
 
 # --- Static Configuration Files ---
-"~/.config/atuin/config.toml"           = { source = ".config/atuin/config.toml", mode = "symlink" }
-"~/.config/bat"                         = { source = ".config/bat", mode = "symlink" }
-"~/.config/tealdeer/config.toml"        = { source = ".config/tealdeer/config.toml", mode = "symlink" }
-
-# --- Encrypted Files ---
-# Encrypted files stay in the dotfiles repo; decryption reads from source
-#"~/.ssh/config.age"                     = { source = ".ssh/config.age", mode = "copy" }
-#"~/.config/mise/encrypted/nextdns.age"  = { source = "files/nextdns.age", mode = "copy" }
+#"~/.config/atuin/config.toml"           = { source = ".config/atuin/config.toml", mode = "symlink" }
+#"~/.config/bat"                         = { source = ".config/bat", mode = "symlink" }
+#"~/.config/tealdeer/config.toml"        = { source = ".config/tealdeer/config.toml", mode = "symlink" }
 
 # --- Dynamic Templates ---
-"~/.zshrc"                              = { source = "zshrc.tera", mode = "template" }
-"~/.zprofile"                           = { source = "zprofile.tera", mode = "template" }
-"~/.gitconfig"                          = { source = "gitconfig.tera", mode = "template" }
-"~/.bashrc"                             = { source = "bashrc.tera", mode = "template" }
+#"~/.zshrc"                              = { source = "zshrc.tera", mode = "template" }
+#"~/.zprofile"                           = { source = "zprofile.tera", mode = "template" }
+#"~/.gitconfig"                          = { source = "gitconfig.tera", mode = "template" }
+#"~/.bashrc"                             = { source = "bashrc.tera", mode = "template" }
 
 [dotfiles."vscode/settings.json"]
 source = ".config/vscode/settings.tera"
