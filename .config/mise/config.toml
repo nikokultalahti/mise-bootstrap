@@ -217,6 +217,7 @@ television = "latest"
 yq = "latest"
 yt-dlp = "latest"
 zoxide = "latest"
+"github:timrogers/litra-rs" = "latest"
 "github:timrogers/litra-autotoggle" = "latest"
 "github:aaif-goose/goose" = "latest"
 
