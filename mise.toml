@@ -14,10 +14,12 @@ dotfiles.root = "$HOME/Dev/dotfiles"
 # ==============================================================================
 [vars]
 name = "Niko Kultalahti"
+email = "hello@nikokultalahti.com"
+machine_type = "personal"
 
 # Continuous history-watcher (watches tracked dotfiles for changes)
-[bootstrap.services.mise-history]
-builtin = "history-watch"
+#[bootstrap.services.mise-history]
+#builtin = "history-watch"
 
 # ==============================================================================
 # HOOK: PRE-PACKAGES
@@ -134,22 +136,21 @@ fi
 # ==============================================================================
 # Replaces /etc/rpm-ostreed.conf for automatic staged updates
 [bootstrap.files."/etc/rpm-ostreed.conf"]
-source = "../../files/rpm-ostreed.conf"
+source = "files/rpm-ostreed.conf"
 owner = "root"
 mode = "0644"
 notify = ["rpm-ostreed-automatic.timer"]
 
 # Sets up repository for VSCode to be layered
 [bootstrap.files."/etc/yum.repos.d/vscode.repo"]
-source = "../../files/vscode.repo"
+source = "files/vscode.repo"
 owner = "root"
 mode = "0644"
 
-# Copy encrypted nextdns.conf to right place to be decrypted later
-[bootstrap.files."/etc/systemd/resolved.conf.d/nextdns.age"]
-source = "../../files/nextdns.age"
+# Ensure the directory exists for NextDNS config
+[bootstrap.directories."/etc/systemd/resolved.conf.d"]
 owner = "root"
-mode = "0644"
+mode = "0755"
 
 # ==============================================================================
 # PHASE 05: SYSTEM SERVICES (mise bootstrap services apply)
@@ -169,26 +170,28 @@ enabled = true
 # PHASE 09: DOTFILES & TEMPLATES (mise bootstrap dotfiles apply)
 # ==============================================================================
 [dotfiles]
-# --- Self-managing Mise config (relative to .config/mise/) ---
-"~/.config/mise/config.toml" = { source = "config.toml", mode = "symlink" }
+# --- Self-managing Mise config ---
+"~/.config/mise/config.toml"        = { source = "mise.toml", mode = "symlink" }
+"~/.config/mise/config.work.toml"   = { source = "mise.work.toml", mode = "symlink" }
 
 # --- Static Configuration Files ---
-"~/.config/atuin/config.toml"           = { source = "../atuin/config.toml", mode = "symlink" }
-"~/.config/bat"                         = { source = "../bat", mode = "symlink" }
-"~/.config/tealdeer/config.toml"        = { source = "../tealdeer/config.toml", mode = "symlink" }
+"~/.config/atuin/config.toml"           = { source = ".config/atuin/config.toml", mode = "symlink" }
+"~/.config/bat"                         = { source = ".config/bat", mode = "symlink" }
+"~/.config/tealdeer/config.toml"        = { source = ".config/tealdeer/config.toml", mode = "symlink" }
 
 # --- Encrypted Files ---
-"~/.ssh/config.age"                     = { source = "../../.ssh/config.age", mode = "copy" }
-#"~/.config/mise/encrypted/nextdns.age"  = { source = "../../files/nextdns.age", mode = "copy" }
+# Encrypted files stay in the dotfiles repo; decryption reads from source
+#"~/.ssh/config.age"                     = { source = ".ssh/config.age", mode = "copy" }
+#"~/.config/mise/encrypted/nextdns.age"  = { source = "files/nextdns.age", mode = "copy" }
 
 # --- Dynamic Templates ---
-"~/.zshrc"                              = { source = "../../zshrc.tera", mode = "template" }
-"~/.zprofile"                           = { source = "../../zprofile.tera", mode = "template" }
-"~/.gitconfig"                          = { source = "../../gitconfig.tera", mode = "template" }
-"~/.bashrc"                             = { source = "../../bashrc.tera", mode = "template" }
+"~/.zshrc"                              = { source = "zshrc.tera", mode = "template" }
+"~/.zprofile"                           = { source = "zprofile.tera", mode = "template" }
+"~/.gitconfig"                          = { source = "gitconfig.tera", mode = "template" }
+"~/.bashrc"                             = { source = "bashrc.tera", mode = "template" }
 
 [dotfiles."vscode/settings.json"]
-source = "../vscode/settings.tera"
+source = ".config/vscode/settings.tera"
 mode = "template" 
 variants = [
   { os = "macos", target = "~/Library/Application Support/Code/User/settings.json" },
@@ -231,6 +234,9 @@ run = """
 set -e
 
 AGE_KEY="$HOME/.config/age/dotfiles-age-key.txt"
+DOTFILES_DIR="$HOME/Dev/dotfiles"
+
+echo "Dotfiles root is: $DOTFILES_DIR"
 
 if [[ ! -f "$AGE_KEY" ]]; then
     echo "[!] Warning: Age key not found at $AGE_KEY; skipping decryption."
@@ -240,7 +246,7 @@ fi
 # ------------------------------------------------------------------------------
 # 1. Decrypt SSH Config (~/.ssh/config)
 # ------------------------------------------------------------------------------
-ENCRYPTED_SSH="$HOME/.ssh/config.age"
+ENCRYPTED_SSH="$DOTFILES_DIR/.ssh/config.age"
 DECRYPTED_SSH="$HOME/.ssh/config"
 
 if [[ -f "$ENCRYPTED_SSH" ]]; then
@@ -253,14 +259,15 @@ fi
 # ------------------------------------------------------------------------------
 # 2. Decrypt System NextDNS Config (Linux only: /etc/systemd/resolved.conf.d/)
 # ------------------------------------------------------------------------------
-ENCRYPTED_DNS="/etc/systemd/resolved.conf.d/nextdns.age"
+ENCRYPTED_DNS="$DOTFILES_DIR/files/nextdns.age"
 DECRYPTED_DNS="/etc/systemd/resolved.conf.d/nextdns.conf"
 
-if [[ -f "$ENCRYPTED_DNS" ]]; then
-    echo "[-] Decrypting /etc/systemd/resolved.conf.d/nextdns.age [-]"
-    age -d -i "$AGE_KEY" -o "$DECRYPTED_DNS" "$ENCRYPTED_DNS"
-    chmod 600 "$DECRYPTED_DNS"
-    echo "[✓] /etc/systemd/resolved.conf.d/nextdns.conf"
+if [[ "$(uname -s)" == "Linux" && -f "$ENCRYPTED_DNS" ]]; then
+    echo "[-] Configuring NextDNS in systemd-resolved [-]"
+
+    # Stream decrypt directly into destination (no plaintext ever touches /tmp)
+    age -d -i "$AGE_KEY" "$ENCRYPTED_DNS" | sudo tee "$DECRYPTED_DNS" > /dev/null
+    sudo chmod 644 "$DECRYPTED_DNS"
 
     # Restart systemd-resolved to apply the new DNS immediately
     sudo systemctl restart systemd-resolved
