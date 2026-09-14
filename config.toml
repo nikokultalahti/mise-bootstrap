@@ -278,7 +278,7 @@ run = """
 set -e
 
 # Set dotfiles repository origin for enabling sync
-mise bootstrap dotfiles origin set it@github.com:nikokultalahti/mise-bootstrap.git --sync manual
+mise dot origin set it@github.com:nikokultalahti/mise-bootstrap.git --sync manual
 echo "[✓] Dotfiles origin set with automatic sync enabled"
 fi
 
