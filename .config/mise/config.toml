@@ -145,6 +145,12 @@ source = "../../files/vscode.repo"
 owner = "root"
 mode = "0644"
 
+# Copy encrypted nextdns.conf to right place to be decrypted later
+[bootstrap.files."/etc/systemd/resolved.conf.d/nextdns.age"]
+source = "../../files/nextdns.age"
+owner = "root"
+mode = "0644"
+
 # ==============================================================================
 # PHASE 05: SYSTEM SERVICES (mise bootstrap services apply)
 # Converges systemd units (both system-level timers and user sockets)
@@ -173,7 +179,7 @@ enabled = true
 
 # --- Encrypted Files ---
 "~/.ssh/config.age"                     = { source = "../../.ssh/config.age", mode = "copy" }
-"~/.config/mise/encrypted/nextdns.age"  = { source = "../../files/nextdns.age", mode = "copy" }
+#"~/.config/mise/encrypted/nextdns.age"  = { source = "../../files/nextdns.age", mode = "copy" }
 
 # --- Dynamic Templates ---
 "~/.zshrc"                              = { source = "../../zshrc.tera", mode = "template" }
@@ -246,24 +252,18 @@ fi
 # ------------------------------------------------------------------------------
 # 2. Decrypt System NextDNS Config (Linux only: /etc/systemd/resolved.conf.d/)
 # ------------------------------------------------------------------------------
-ENCRYPTED_DNS="$HOME/.config/mise/encrypted/nextdns.age"
-TARGET_DIR="/etc/systemd/resolved.conf.d"
+ENCRYPTED_DNS="/etc/systemd/resolved.conf.d/nextdns.age"
 DECRYPTED_DNS="/etc/systemd/resolved.conf.d/nextdns.conf"
 
-if [[ "$(uname -s)" == "Linux" && -f "$ENCRYPTED_DNS" ]]; then
-    echo "[-] Configuring NextDNS in systemd-resolved [-]"
-
-    # Create system directory if missing
-    sudo mkdir -p "$TARGET_DIR"
-
-    # Stream decrypt directly into destination (no plaintext ever touches /tmp)
-    age -d -i "$AGE_KEY" "$ENCRYPTED_DNS" | sudo tee "$DECRYPTED_DNS" > /dev/null
-    sudo chmod 644 "$DECRYPTED_DNS"
+if [[ -f "$ENCRYPTED_DNS" ]]; then
+    echo "[-] Decrypting /etc/systemd/resolved.conf.d/nextdns.age [-]"
+    age -d -i "$AGE_KEY" -o "$DECRYPTED_DNS" "$ENCRYPTED_DNS"
+    chmod 600 "$DECRYPTED_DNS"
+    echo "[✓] /etc/systemd/resolved.conf.d/nextdns.conf"
 
     # Restart systemd-resolved to apply the new DNS immediately
     sudo systemctl restart systemd-resolved
     echo "[✓] NextDNS configured and systemd-resolved restarted"
-
 fi
 """
 
