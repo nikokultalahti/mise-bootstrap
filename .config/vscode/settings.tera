@@ -1,0 +1,24 @@
+{
+    "editor.fontFamily": "'JetbrainsMono Nerd Font', 'Cascadia Code', 'Droid Sans Mono', 'monospace'",
+    "workbench.colorTheme": "Catppuccin Mocha",
+    "workbench.iconTheme": "catppuccin-mocha",
+    "editor.semanticHighlighting.enabled": true, // Make semantic highlighting look good
+    "terminal.integrated.fontFamily": "'JetBrainsMono Nerd Font'",
+    "terminal.integrated.minimumContrastRatio": 1, // Prevent VSCode from modifying the terminal colors
+    "window.titleBarStyle": "custom", // Make the window's titlebar use the workbench colors
+    "telemetry.telemetryLevel": "off",
+    "terminal.integrated.cursorBlinking": true,
+    "terminal.integrated.defaultProfile.linux": "zsh",
+    "git.autofetch": true,
+    "git.confirmSync": true,
+    "git.enableCommitSigning": true,
+    "dev.containers.dockerComposePath": "podman-compose",
+    "dev.containers.dockerPath": "podman",
+    {% if os() == "linux" %}
+    "dev.containers.dockerSocketPath": "/run/user/1000/podman/podman.sock",
+    {% endif %}
+    {% if os() == "linux" %}
+    "dev.containers.dockerSocketPath": "/run/user/501/podman/podman.sock"
+    {% endif %}
+    "update.mode": "none"
+}
