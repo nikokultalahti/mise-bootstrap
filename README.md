@@ -19,7 +19,10 @@ A unified, declarative machine bootstrapper and dotfiles manager for **Fedora Si
 1. Bootstrap
 ``` 
 curl https://mise.run | sh  
-mise -E personal bootstrap --adopt https://github.com/nikokultalahti/mise-bootstrap.git
+mise bootstrap --adopt https://github.com/nikokultalahti/mise-bootstrap.git
+
+For work 
+
 ```
 
 2. Layering
@@ -35,3 +38,8 @@ sudo rpm-ostree override remove firefox firefox-langpacks gnome-tour \
 ```
 3. Reboot  
 ```systemctl reboot```
+
+### Additional commands
+
+Completely uninstall mise
+```mise implode```

@@ -1,12 +1,11 @@
 # ==============================================================================
-# MISE MASTER CONFIGURATION (.config/mise/config.toml)
+# MISE MASTER CONFIGURATION
 # Manages: Tools, Packages (Flathub/Brew), Dotfiles, Systemd, and Auto-Sync
 # ==============================================================================
 
 [settings]
 # Automatically check and update the mise executable in the background
 auto_update = true
-dotfiles.root = "$HOME/Dev/dotfiles"
 
 # ==============================================================================
 # VARIABLES
@@ -234,7 +233,7 @@ run = """
 set -e
 
 AGE_KEY="$HOME/.config/age/dotfiles-age-key.txt"
-DOTFILES_DIR="$HOME/Dev/dotfiles"
+DOTFILES_DIR="{{ config_root }}"
 
 echo "Dotfiles root is: $DOTFILES_DIR"
 
