@@ -6,6 +6,7 @@
 [settings]
 # Automatically check and update the mise executable in the background
 auto_update = true
+dotfiles.root = "$HOME/Dev/dotfiles"
 
 # ==============================================================================
 # VARIABLES
@@ -17,8 +18,8 @@ email = "hello@nikokultalahti.com"
 machine_type = "personal"
 
 # Continuous history-watcher (watches tracked dotfiles for changes)
-#[bootstrap.services.mise-history]
-#builtin = "history-watch"
+[bootstrap.services.mise-history]
+builtin = "history-watch"
 
 # ==============================================================================
 # HOOK: PRE-PACKAGES
@@ -167,20 +168,28 @@ enabled = true
 # --- Self-managing Mise config (relative to .config/mise/) ---
 "~/.config/mise/config.toml" = { source = "config.toml", mode = "symlink" }
 
-# --- Static Configuration Files (in sibling folders under .config/) ---
-"~/.config/atuin/config.toml"    = { source = "../atuin/config.toml", mode = "symlink" }
-"~/.config/bat"                 = { source = "../bat", mode = "symlink" }
-"~/.config/tealdeer/config.toml" = { source = "../tealdeer/config.toml", mode = "symlink" }
+# --- Static Configuration Files ---
+"~/.config/atuin/config.toml"           = { source = "../atuin/config.toml", mode = "symlink" }
+"~/.config/bat"                         = { source = "../bat", mode = "symlink" }
+"~/.config/tealdeer/config.toml"        = { source = "../tealdeer/config.toml", mode = "symlink" }
 
-# --- Encrypted Files (relative to root ../../) ---
-"~/.ssh/config.age" = { source = "../../.ssh/config.age", mode = "copy" }
-"~/.config/mise/encrypted/nextdns.age" = { source = "../../files/nextdns.age", mode = "copy" }
+# --- Encrypted Files ---
+"~/.ssh/config.age"                     = { source = "../../.ssh/config.age", mode = "copy" }
+"~/.config/mise/encrypted/nextdns.age"  = { source = "../../files/nextdns.age", mode = "copy" }
 
-# --- Dynamic Templates (at repository root ../../) ---
-"~/.zshrc"     = { source = "../../zshrc.tera", mode = "template" }
-"~/.zprofile"  = { source = "../../zprofile.tera", mode = "template" }
-"~/.gitconfig" = { source = "../../gitconfig.tera", mode = "template" }
-"~/.bashrc"    = { source = "../../bashrc.tera", mode = "template" }
+# --- Dynamic Templates ---
+"~/.zshrc"                              = { source = "../../zshrc.tera", mode = "template" }
+"~/.zprofile"                           = { source = "../../zprofile.tera", mode = "template" }
+"~/.gitconfig"                          = { source = "../../gitconfig.tera", mode = "template" }
+"~/.bashrc"                             = { source = "../../bashrc.tera", mode = "template" }
+
+[dotfiles."vscode/settings.json"]
+source = "../vscode/settings.tera"
+mode = "template" 
+variants = [
+  { os = "macos", target = "~/Library/Application Support/Code/User/settings.json" },
+  { os = "linux", target = "~/.config/Code/User/settings.json" }
+]
 
 # ==============================================================================
 # PHASE 15: TOOLS (mise install)
