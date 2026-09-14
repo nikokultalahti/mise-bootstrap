@@ -19,7 +19,7 @@ A unified, declarative machine bootstrapper and dotfiles manager for **Fedora Si
 1. Bootstrap
 ``` 
 curl https://mise.run | sh  
-mise bootstrap --adopt https://github.com/nikokultalahti/mise-bootstrap.git
+mise -E personal bootstrap --adopt https://github.com/nikokultalahti/mise-bootstrap.git
 ```
 
 2. Layering

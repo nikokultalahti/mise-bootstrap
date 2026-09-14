@@ -14,8 +14,6 @@ dotfiles.root = "$HOME/Dev/dotfiles"
 # ==============================================================================
 [vars]
 name = "Niko Kultalahti"
-email = "hello@nikokultalahti.com"
-machine_type = "personal"
 
 # Continuous history-watcher (watches tracked dotfiles for changes)
 [bootstrap.services.mise-history]
