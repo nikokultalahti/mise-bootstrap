@@ -17,8 +17,8 @@ email = "hello@nikokultalahti.com"
 machine_type = "personal"
 
 # Continuous history-watcher (watches tracked dotfiles for changes)
-#[bootstrap.services.mise-history]
-#builtin = "history-watch"
+[bootstrap.services.mise-history]
+builtin = "history-watch"
 
 # ==============================================================================
 # HOOK: PRE-PACKAGES
@@ -170,19 +170,19 @@ enabled = true
 # ==============================================================================
 [dotfiles]
 # --- Self-managing Mise config ---
-#"~/.config/mise/config.toml"        = { source = "config.toml", mode = "symlink" }
-#"~/.config/mise/config.work.toml"   = { source = "config.work.toml", mode = "symlink" }
+"~/.config/mise/config.toml"        = { source = "config.toml", mode = "symlink" }
+"~/.config/mise/config.work.toml"   = { source = "config.work.toml", mode = "symlink" }
 
 # --- Static Configuration Files ---
-#"~/.config/atuin/config.toml"           = { source = ".config/atuin/config.toml", mode = "symlink" }
-#"~/.config/bat"                         = { source = ".config/bat", mode = "symlink" }
-#"~/.config/tealdeer/config.toml"        = { source = ".config/tealdeer/config.toml", mode = "symlink" }
+"~/.config/atuin/config.toml"           = { source = ".config/atuin/config.toml", mode = "symlink" }
+"~/.config/bat"                         = { source = ".config/bat", mode = "symlink" }
+"~/.config/tealdeer/config.toml"        = { source = ".config/tealdeer/config.toml", mode = "symlink" }
 
 # --- Dynamic Templates ---
-#"~/.zshrc"                              = { source = "zshrc.tera", mode = "template" }
-#"~/.zprofile"                           = { source = "zprofile.tera", mode = "template" }
-#"~/.gitconfig"                          = { source = "gitconfig.tera", mode = "template" }
-#"~/.bashrc"                             = { source = "bashrc.tera", mode = "template" }
+"~/.zshrc"                              = { source = "zshrc.tera", mode = "template" }
+"~/.zprofile"                           = { source = "zprofile.tera", mode = "template" }
+"~/.gitconfig"                          = { source = "gitconfig.tera", mode = "template" }
+"~/.bashrc"                             = { source = "bashrc.tera", mode = "template" }
 
 [dotfiles."vscode/settings.json"]
 source = ".config/vscode/settings.tera"
@@ -277,12 +277,9 @@ run = """
 #!/usr/bin/env bash
 set -e
 
-# Switch dotfiles repository origin to SSH and enable background sync
-CURRENT_ORIGIN="$(mise bootstrap dotfiles origin get 2>/dev/null || true)"
-if [[ "$CURRENT_ORIGIN" == https://github.com/* ]]; then
-    SSH_URL="$(echo "$CURRENT_ORIGIN" | sed -E 's#^https://github\\.com/([^/]+)/(.+)$#git@github.com:\\1/\\2#')"
-    mise bootstrap dotfiles origin set "$SSH_URL" --sync sync
-    echo "[✓] Dotfiles origin switched to $SSH_URL with automatic sync enabled"
+# Set dotfiles repository origin for enabling sync
+mise bootstrap dotfiles origin set it@github.com:nikokultalahti/mise-bootstrap.git --sync manual
+echo "[✓] Dotfiles origin set with automatic sync enabled"
 fi
 
 echo ""
