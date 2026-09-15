@@ -207,13 +207,13 @@ enabled = true
 #"~/.gitconfig"                          = { source = "gitconfig.tera", mode = "template" }
 #"~/.bashrc"                             = { source = "bashrc.tera", mode = "template" }
 
-[dotfiles."vscode/settings.json"]
-source = ".config/vscode/settings.tera"
-mode = "template" 
-variants = [
-  { os = "macos", target = "~/Library/Application Support/Code/User/settings.json" },
-  { os = "linux", target = "~/.config/Code/User/settings.json" }
-]
+#[dotfiles."vscode/settings.json"]
+#source = ".config/vscode/settings.tera"
+#mode = "template" 
+#variants = [
+#  { os = "macos", target = "~/Library/Application Support/Code/User/settings.json" },
+#  { os = "linux", target = "~/.config/Code/User/settings.json" }
+#]
 
 # ==============================================================================
 # PHASE 15: TOOLS (mise install)
