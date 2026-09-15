@@ -6,6 +6,7 @@
 [settings]
 # Automatically check and update the mise executable in the background
 auto_update = true
+age.key_file = "$HOME/.config/age/dotfiles-age-key.txt"
 
 # ==============================================================================
 # VARIABLES
@@ -291,7 +292,7 @@ run = """
 set -e
 
 # 1. Flip origin to SSH and enable sync
-mise bootstrap dotfiles origin set git@github.com:nikokultalahti/dotfiles.git --sync manual
+mise bootstrap dotfiles origin set git@github.com:nikokultalahti/dotfiles.git --sync manual -y
 echo "[✓] Dotfiles origin connected via SSH."
 
 # 2. If bootstrapping on a work machine, persist the environment
