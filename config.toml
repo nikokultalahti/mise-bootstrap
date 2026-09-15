@@ -20,6 +20,9 @@ machine_type = "personal"
 [bootstrap.services.mise-history]
 builtin = "history-watch"
 
+[history.encryption]
+recipients = ["age1sggv22hyqdyq5zu024ge9n9ae0f5lwv0fyyp5k3kvs4kyrw24s0sh7kj6v"]
+
 # ==============================================================================
 # HOOK: PRE-PACKAGES
 # Runs immediately BEFORE Phase 03 ([bootstrap.packages]).
@@ -141,9 +144,11 @@ if [[ ! -f "$HOME/.config/age/dotfiles-age-key.txt" ]]; then
 fi
 
 # Pull GitHub SSH Key for setting up Mise origin later on
-if [[ ! -f "$HOME/.ssh/age/github-auth" ]]; then
-    $BW_COMMAND get notes "dotfiles-github-auth-key" --session "$BW_SESSION" > "$HOME/.ssh/github-auth"
-    chmod 600 "$HOME/.ssh/github-auth"
+if [[ ! -f "$HOME/.ssh/id_ed25519" ]]; then
+    mkdir -p "$HOME/.ssh"
+    chmod 700 "$HOME/.ssh"
+    $BW_COMMAND get notes "dotfiles-github-auth-key" --session "$BW_SESSION" > "$HOME/.ssh/id_ed25519"
+    chmod 600 "$HOME/.ssh/id_ed25519"
 
     # Add github.com to known_hosts to prevent interactive SSH prompt
     touch "$HOME/.ssh/known_hosts"
@@ -251,9 +256,6 @@ run = """
 set -e
 
 AGE_KEY="$HOME/.config/age/dotfiles-age-key.txt"
-DOTFILES_DIR="{{ config_root }}"
-
-echo "Dotfiles root is: $DOTFILES_DIR"
 
 if [[ ! -f "$AGE_KEY" ]]; then
     echo "[!] Warning: Age key not found at $AGE_KEY; skipping decryption."
@@ -261,25 +263,13 @@ if [[ ! -f "$AGE_KEY" ]]; then
 fi
 
 # ------------------------------------------------------------------------------
-# 1. Decrypt SSH Config (~/.ssh/config)
-# ------------------------------------------------------------------------------
-ENCRYPTED_SSH="$DOTFILES_DIR/.ssh/config.age"
-DECRYPTED_SSH="$HOME/.ssh/config"
-
-if [[ -f "$ENCRYPTED_SSH" ]]; then
-    echo "[-] Decrypting ~/.ssh/config [-]"
-    age -d -i "$AGE_KEY" -o "$DECRYPTED_SSH" "$ENCRYPTED_SSH"
-    chmod 600 "$DECRYPTED_SSH"
-    echo "[✓] ~/.ssh/config decrypted"
-fi
-
-# ------------------------------------------------------------------------------
 # 2. Decrypt System NextDNS Config (Linux only: /etc/systemd/resolved.conf.d/)
 # ------------------------------------------------------------------------------
-ENCRYPTED_DNS="$DOTFILES_DIR/files/nextdns.age"
-DECRYPTED_DNS="/etc/systemd/resolved.conf.d/nextdns.conf"
-
 if [[ "$(uname -s)" == "Linux" && -f "$ENCRYPTED_DNS" ]]; then
+
+    ENCRYPTED_DNS="$HOME/.config/mise/files/nextdns.age"
+    DECRYPTED_DNS="/etc/systemd/resolved.conf.d/nextdns.conf"
+
     echo "[-] Configuring NextDNS in systemd-resolved [-]"
 
     # Stream decrypt directly into destination (no plaintext ever touches /tmp)
@@ -301,7 +291,7 @@ run = """
 set -e
 
 # 1. Flip origin to SSH and enable sync
-mise dot origin set git@github.com:nikokultalahti/your-repo.git --sync manual
+mise dot origin set git@github.com:nikokultalahti/dotfiles.git --sync manual
 echo "[✓] Dotfiles origin connected via SSH."
 
 # 2. If bootstrapping on a work machine, persist the environment
@@ -312,6 +302,6 @@ echo "[✓] Machine permanently configured with 'work' profile in config.local.t
 
 echo ""
 echo "=================================================================="
-echo "🎉 Bootstrap complete! 
+echo "🎉 Bootstrap complete!" 
 echo "=================================================================="
 """
