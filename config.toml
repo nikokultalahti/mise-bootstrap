@@ -108,25 +108,48 @@ run = """
 #!/usr/bin/env bash
 set -e
 
+# Set bw command to variable depending on whether running via Flatpak (Linux) or normal bw cli (MacOS)
+if [[ "$(uname -s)" == "Linux" ]]; then
+    BW_COMMAND="flatpak run --command=bw com.bitwarden.desktop"
+fi
+
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    BW_COMMAND="bw"
+fi
+
+
 if [[ "$(uname -s)" == "Linux" ]]; then
     # Enable GNOME Software background updates
     if command -v gsettings &>/dev/null; then
         gsettings set org.gnome.software download-updates true
         gsettings set org.gnome.software download-updates-notify true
+        echo "[✓] Automatic GNOME Software updates turnead on"
     fi
+fi
 
-    # Fetch AGE secret key from Bitwarden if not already present
-    if [[ ! -f "$HOME/.config/age/dotfiles-age-key.txt" ]]; then
-        echo "[-] Logging into Bitwarden to retrieve age decryption key [-]"
-        flatpak run --command=bw com.bitwarden.desktop config server https://vault.bitwarden.eu
-        flatpak run --command=bw com.bitwarden.desktop login --apikey
-        BW_SESSION=$(flatpak run --command=bw com.bitwarden.desktop unlock --raw)
-        
-        mkdir -p "$HOME/.config/age"
-        flatpak run --command=bw com.bitwarden.desktop get notes "dotfiles-age-key" --session "$BW_SESSION" > "$HOME/.config/age/dotfiles-age-key.txt"
-        chmod 600 "$HOME/.config/age/dotfiles-age-key.txt"
-        echo "[✓] Age secret key successfully restored to ~/.config/age/dotfiles-age-key.txt"
-    fi
+# Fetch AGE secret key from Bitwarden if not already present
+if [[ ! -f "$HOME/.config/age/dotfiles-age-key.txt" ]]; then
+    echo "[-] Logging into Bitwarden to retrieve age decryption key [-]"
+    $BW_COMMAND config server https://vault.bitwarden.eu
+    $BW_COMMAND login --apikey
+    BW_SESSION=$($BW_COMMAND unlock --raw)
+    
+    mkdir -p "$HOME/.config/age"
+    $BW_COMMAND get notes "dotfiles-age-key" --session "$BW_SESSION" > "$HOME/.config/age/dotfiles-age-key.txt"
+    chmod 600 "$HOME/.config/age/dotfiles-age-key.txt"
+    echo "[✓] Age secret key successfully restored to ~/.config/age/dotfiles-age-key.txt"
+fi
+
+# Pull GitHub SSH Key for setting up Mise origin later on
+if [[ ! -f "$HOME/.ssh/age/github-auth" ]]; then
+    $BW_COMMAND get notes "dotfiles-github-auth-key" --session "$BW_SESSION" > "$HOME/.ssh/github-auth"
+    chmod 600 "$HOME/.ssh/github-auth"
+
+    # Add github.com to known_hosts to prevent interactive SSH prompt
+    touch "$HOME/.ssh/known_hosts"
+    ssh-keyscan -t ed25519 github.com >> "$HOME/.ssh/known_hosts" 2>/dev/null
+
+    echo "[✓] SSH key successfully restored to ~/.ssh/github-auth"
 fi
 """
 
@@ -272,18 +295,23 @@ fi
 # ==============================================================================
 # PHASE 19: FINAL HOOK (mise bootstrap final-hook)
 # ==============================================================================
-# [bootstrap.hooks.final]
-# run = """
-# #!/usr/bin/env bash
-# set -e
+[bootstrap.hooks.final]
+run = """
+#!/usr/bin/env bash
+set -e
 
-# # Set dotfiles repository origin for enabling sync
-# mise dot origin set it@github.com:nikokultalahti/mise-bootstrap.git --sync manual
-# echo "[✓] Dotfiles origin set with automatic sync enabled"
-# fi
+# 1. Flip origin to SSH and enable sync
+mise dot origin set git@github.com:nikokultalahti/your-repo.git --sync manual
+echo "[✓] Dotfiles origin connected via SSH."
 
-# echo ""
-# echo "=================================================================="
-# echo "🎉 Bootstrap complete! Please reboot if required."
-# echo "=================================================================="
-# """
+# 2. If bootstrapping on a work machine, persist the environment
+{% if vars.machine_type == "work" %}
+mise settings set env work
+echo "[✓] Machine permanently configured with 'work' profile in config.local.toml"
+{% endif %}
+
+echo ""
+echo "=================================================================="
+echo "🎉 Bootstrap complete! 
+echo "=================================================================="
+"""
