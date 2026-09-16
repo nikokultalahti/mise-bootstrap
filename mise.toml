@@ -124,7 +124,7 @@ if [[ "$(uname -s)" == "Linux" ]]; then
     fi
 fi
 
-if [[ ! -f "$HOME/.config/age/dotfiles-age-key.txt"]]; then
+if [[ ! -f "$HOME/.config/age/dotfiles-age-key.txt" || ! -f "$HOME/.ssh/id_ed25519" ]]; then
     echo "[-] Checking Bitwarden authentication to fetch secrets [-]"
     
     # 1. Only configure server and login if NOT already authenticated
@@ -144,6 +144,18 @@ if [[ ! -f "$HOME/.config/age/dotfiles-age-key.txt"]]; then
         $BW_COMMAND get notes "dotfiles-age-key" --session "$BW_SESSION" > "$HOME/.config/age/dotfiles-age-key.txt"
         chmod 600 "$HOME/.config/age/dotfiles-age-key.txt"
         echo "[✓] Age secret key restored to ~/.config/age/dotfiles-age-key.txt"
+    fi
+
+    # 4. Pull GitHub SSH Key if missing
+    if [[ ! -f "$HOME/.ssh/id_ed25519" ]]; then
+        mkdir -p "$HOME/.ssh"
+        chmod 700 "$HOME/.ssh"
+        $BW_COMMAND get notes "dotfiles-github-auth-key" --session "$BW_SESSION" > "$HOME/.ssh/id_ed25519"
+        chmod 600 "$HOME/.ssh/id_ed25519"
+
+        touch "$HOME/.ssh/known_hosts"
+        ssh-keyscan -t ed25519 github.com >> "$HOME/.ssh/known_hosts" 2>/dev/null
+        echo "[✓] SSH key restored to ~/.ssh/id_ed25519"
     fi
 fi
 """
