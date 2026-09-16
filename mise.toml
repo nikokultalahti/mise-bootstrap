@@ -283,15 +283,36 @@ if [[ ! -f "$AGE_KEY" ]]; then
     exit 0
 fi
 
+# ------------------------------------------------------------------------------
+# 1. Decrypt User SSH Config (~/.ssh/config)
+# ------------------------------------------------------------------------------
+ENCRYPTED_SSH="$HOME/Dev/dotfiles/.ssh/ssh_config_personal.age"
+if [[ ! -f "$ENCRYPTED_SSH" && -f "$PWD/.ssh/ssh_config_personal.age" ]]; then
+    ENCRYPTED_SSH="$PWD/.ssh/ssh_config_personal.age"
+fi
+
+DECRYPTED_SSH="$HOME/.ssh/config"
+
+if [[ -f "$ENCRYPTED_SSH" ]]; then
+    echo "[-] Decrypting ~/.ssh/config [-]"
+    mkdir -p "$HOME/.ssh"
+    chmod 700 "$HOME/.ssh"
+    mise exec -- age -d -i "$AGE_KEY" "$ENCRYPTED_SSH" > "$DECRYPTED_SSH"
+    chmod 600 "$DECRYPTED_SSH"
+    echo "[✓] ~/.ssh/config decrypted"
+fi
+
+# ------------------------------------------------------------------------------
+# 2. Decrypt System NextDNS Config (Linux only: /etc/systemd/resolved.conf.d/)
+# ------------------------------------------------------------------------------
+
 ENCRYPTED_DNS="$HOME/Dev/dotfiles/system/nextdns.age"
 if [[ ! -f "$ENCRYPTED_DNS" && -f "$PWD/system/nextdns.age" ]]; then
     ENCRYPTED_DNS="$PWD/system/nextdns.age"
 fi
 DECRYPTED_DNS="/etc/systemd/resolved.conf.d/nextdns.conf"
 
-# ------------------------------------------------------------------------------
-# Decrypt System NextDNS Config (Linux only: /etc/systemd/resolved.conf.d/)
-# ------------------------------------------------------------------------------
+
 if [[ "$(uname -s)" == "Linux" && -f "$ENCRYPTED_DNS" ]]; then
 
     echo "[-] Configuring NextDNS in systemd-resolved [-]"
