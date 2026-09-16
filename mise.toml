@@ -192,8 +192,8 @@ enabled = true
 # ==============================================================================
 [dotfiles]
 # --- Self-managing Mise config ---
-"~/.config/mise/config.toml" = { source = "config.toml", mode = "symlink" }
-"~/.config/mise/config.work.toml" = {source = "config.work.toml", mode = "symlink" }
+"~/.config/mise/config.toml" = { source = "mise.toml", mode = "symlink" }
+"~/.config/mise/config.work.toml" = {source = "mise.work.toml", mode = "symlink" }
 
 # --- Static Configuration Files ---
 "~/.config/atuin/config.toml"           = { source = ".config/atuin/config.toml", mode = "copy" }
