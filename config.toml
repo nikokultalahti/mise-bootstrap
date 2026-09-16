@@ -193,9 +193,9 @@ enabled = true
 # ==============================================================================
 [dotfiles]
 # --- Self-managing Mise config ---
-"~/.dotfiles" = "~/Dev/dotfiles"
-"~/.config/mise/config.toml" = "~/Dev/dotfiles/config.toml"
-"~/.config/mise/config.work.toml" = "~/Dev/dotfiles/config.work.toml"
+#"~/.dotfiles" = "~/Dev/dotfiles"
+#"~/.config/mise/config.toml" = "~/Dev/dotfiles/config.toml"
+#"~/.config/mise/config.work.toml" = "~/Dev/dotfiles/config.work.toml"
 
 # --- Static Configuration Files ---
 "~/.config/atuin/config.toml"           = { source = ".config/atuin/config.toml", mode = "copy" }
@@ -258,7 +258,7 @@ if [[ ! -f "$AGE_KEY" ]]; then
     exit 0
 fi
 
-ENCRYPTED_DNS="$HOME/Dev/dotfiles/system/nextdns.age"
+ENCRYPTED_DNS="/system/nextdns.age"
 DECRYPTED_DNS="/etc/systemd/resolved.conf.d/nextdns.conf"
 
 # ------------------------------------------------------------------------------
