@@ -133,7 +133,7 @@ if [[ ! -f "$HOME/.config/age/dotfiles-age-key.txt" || ! -f "$HOME/.ssh/id_ed255
     # 1. Only configure server and login if NOT already authenticated
     if ! $BW_COMMAND login --check >/dev/null 2>&1; then
         $BW_COMMAND config server https://vault.bitwarden.eu
-        $BW_COMMAND login --apikey
+        $BW_COMMAND login
     else
         echo "[✓] Bitwarden already configured and logged in"
     fi
