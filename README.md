@@ -94,13 +94,15 @@ systemctl reboot
        ↓
 [bootstrap.files] (/etc system configs placed)
        ↓
-[bootstrap.services] (System timers, auto-update timer & Podman socket started)
+[bootstrap.services] (System timers & user Podman socket started)
        ↓
 [dotfiles] (Configs linked, copied, and Tera templates rendered)
        ↓
+[bootstrap.linux.systemd.units] (Workstation auto-update timer & service deployed)
+       ↓
 [tools] (CLI tools installed via mise)
        ↓
-[bootstrap.hooks.post-tools] (Stream-decrypt nextdns.age into /etc)
+[bootstrap.hooks.post-tools] (Stream-decrypt secrets via age)
        ↓
 [bootstrap.hooks.final] (Flip Git origin to SSH & persist work profile)
 ```
@@ -112,16 +114,14 @@ systemctl reboot
   - Launches the Bitwarden CLI, prompts for authentication, and extracts `~/.ssh/id_ed25519` and your `age` key.
   - Pre-seeds `github.com` into `~/.ssh/known_hosts`.
 - **System Files (`[bootstrap.files]`):** Declaratively manages `/etc/rpm-ostreed.conf` and `/etc/yum.repos.d/vscode.repo` owned by `root`.
-- **System Services (`[bootstrap.services]` & `[bootstrap.linux.systemd.units]`):** 
-  - Enables `rpm-ostreed-automatic.timer` (background OS update staging).
-  - Starts the user-level rootless `podman.socket` (for Dev Containers).
-  - Deploys and enables `workstation-auto-update.timer` to automatically update Flatpaks, Mise tools, and Distrobox containers daily.
+- **System Services (`[bootstrap.services]`):** Enables `rpm-ostreed-automatic.timer` (background OS update staging) and the user-level rootless `podman.socket` (for Dev Containers).
 - **Dotfiles & Templates (`[dotfiles]`):**
   - Symlinks `~/.config/mise/config.toml` back to `~/Dev/dotfiles/mise.toml` (self-managing config).
   - Copies static configs (`atuin`, `bat`, `tealdeer`, `.bashrc`).
   - Renders dynamic Tera templates into `$HOME` (`.zshrc`, `.zprofile`, `.gitconfig`, `vscode/settings.json`).
+- **Linux Systemd User Units (`[bootstrap.linux.systemd.units]`):** Deploys and enables `workstation-auto-update.timer` to automatically update Flatpaks, Mise tools, and Distrobox containers daily.
 - **Tools (`[tools]`):** Installs developer CLI utilities (`age`, `starship`, `atuin`, `eza`, `fd`, `fzf`, `gh`, `jq`, `ripgrep`, `television`, `zoxide`, `goose`, `litra-rs`).
-- **Post-Tools Hook:** Uses `mise exec -- age` to stream-decrypt `system/nextdns.age` directly into `/etc/systemd/resolved.conf.d/nextdns.conf` with `sudo tee` and restarts `systemd-resolved`.
+- **Post-Tools Hook:** Uses `mise exec -- age` to stream-decrypt encrypted configuration secrets (`~/.ssh/config`, `nextdns.conf`).
 - **Final Hook:** Rewrites the repository remote from HTTPS to `git@github.com:...` and, if bootstrapping on a work machine, runs `mise settings set env work` to persist the profile.
 
 ---
