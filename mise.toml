@@ -288,9 +288,9 @@ fi
 # ------------------------------------------------------------------------------
 # 1. Decrypt User SSH Config (~/.ssh/config)
 # ------------------------------------------------------------------------------
-ENCRYPTED_SSH="$HOME/Dev/dotfiles/dotfiles/.ssh/ssh_config_personal.age"
-if [[ ! -f "$ENCRYPTED_SSH" && -f "$PWD/.ssh/ssh_config_personal.age" ]]; then
-    ENCRYPTED_SSH="$PWD/.ssh/ssh_config_personal.age"
+ENCRYPTED_SSH="$HOME/Dev/mise-bootstrap/dotfiles/.ssh/ssh_config_personal.age"
+if [[ ! -f "$ENCRYPTED_SSH" && -f "$PWD/dotfiles/.ssh/ssh_config_personal.age" ]]; then
+    ENCRYPTED_SSH="$PWD/dotfiles/.ssh/ssh_config_personal.age"
 fi
 
 DECRYPTED_SSH="$HOME/.ssh/config"
@@ -308,7 +308,7 @@ fi
 # 2. Decrypt System NextDNS Config (Linux only: /etc/systemd/resolved.conf.d/)
 # ------------------------------------------------------------------------------
 
-ENCRYPTED_DNS="$HOME/Dev/dotfiles/dotfiles/system_files/nextdns.age"
+ENCRYPTED_DNS="$HOME/Dev/mise-bootstrap/system_files/nextdns.age"
 if [[ ! -f "$ENCRYPTED_DNS" && -f "$PWD/system_files/nextdns.age" ]]; then
     ENCRYPTED_DNS="$PWD/system_files/nextdns.age"
 fi
@@ -338,9 +338,9 @@ run = """
 # ------------------------------------------------------------------------------
 # 1. Switch Git Origin from HTTPS to SSH
 # ------------------------------------------------------------------------------
-REPO_DIR="$HOME/Dev/dotfiles"
+REPO_DIR="$HOME/Dev/mise-bootstrap"
 
-# Fallback to current working directory if ~/Dev/dotfiles is not where it was cloned
+# Fallback to current working directory if ~/Dev/mise-bootstrap is not where it was cloned
 if [[ ! -d "$REPO_DIR/.git" && -d "$PWD/.git" ]]; then
     REPO_DIR="$PWD"
 fi

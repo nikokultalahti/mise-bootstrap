@@ -30,13 +30,13 @@ On a clean installation, install `mise` and run the bootstrap:
 #### Personal Machine:
 ```bash
 curl https://mise.run | sh
-mise bootstrap --from https://github.com/nikokultalahti/dotfiles.git --from-dir ~/Dev/dotfiles
+mise bootstrap --from https://github.com/nikokultalahti/mise-bootstrap.git --from-dir ~/Dev/mise-bootstrap --force-dotfiles
 ```
 
 #### Work Machine:
 ```bash
 curl https://mise.run | sh
-mise -E work bootstrap --from https://github.com/nikokultalahti/dotfiles.git --from-dir ~/Dev/dotfiles
+mise -E work bootstrap --from https://github.com/nikokultalahti/mise-bootstrap.git --from-dir ~/Dev/mise-bootstrap --force-dotfiles
 ```
 
 During the run, the Bitwarden CLI will prompt you to authenticate once. It will automatically extract your SSH key and `age` key into place, configure system files, deploy dotfiles, install tools, and flip the git remote to SSH.
@@ -116,7 +116,7 @@ systemctl reboot
 - **System Files (`[bootstrap.files]`):** Declaratively manages `/etc/rpm-ostreed.conf` and `/etc/yum.repos.d/vscode.repo` owned by `root`.
 - **System Services (`[bootstrap.services]`):** Enables `rpm-ostreed-automatic.timer` (background OS update staging) and the user-level rootless `podman.socket` (for Dev Containers).
 - **Dotfiles & Templates (`[dotfiles]`):**
-  - Symlinks `~/.config/mise/config.toml` back to `~/Dev/dotfiles/mise.toml` (self-managing config).
+  - Symlinks `~/.config/mise/config.toml` back to `~/Dev/mise-bootstrap/mise.toml` (self-managing config).
   - Copies static configs (`atuin`, `bat`, `tealdeer`, `.bashrc`).
   - Renders dynamic Tera templates into `$HOME` (`.zshrc`, `.zprofile`, `.gitconfig`, `vscode/settings.json`).
 - **Linux Systemd User Units (`[bootstrap.linux.systemd.units]`):** Deploys and enables `workstation-auto-update.timer` to automatically update Flatpaks, Mise tools, and Distrobox containers daily.
@@ -129,7 +129,7 @@ systemctl reboot
 ## Repository Structure
 
 ```text
-dotfiles/
+mise-bootstrap/
 ├── mise.toml                  # Master machine configuration & bootstrap phases
 ├── mise.work.toml             # Work environment overrides (email, machine type)
 ├── system_files/              # Privileged /etc system files
@@ -155,12 +155,12 @@ dotfiles/
 
 ## Day-to-Day Workflow
 
-Your dotfiles repository lives at `~/Dev/dotfiles` as a standard, independent Git repository.
+Your bootsrap and dotfiles repository lives at `~/Dev/mise-bootstrap` as a standard, independent Git repository.
 
 ### Making Changes
 1. Navigate to the repository:
    ```bash
-   cd ~/Dev/dotfiles
+   cd ~/Dev/mise-bootstrap
    ```
 2. Edit any configuration file, template, or `mise.toml`.
 3. Apply the changes immediately to your live environment:
@@ -178,7 +178,7 @@ Your dotfiles repository lives at `~/Dev/dotfiles` as a standard, independent Gi
 ### Updating on Another Machine
 To pull and apply the latest configurations on another computer:
 ```bash
-cd ~/Dev/dotfiles
+cd ~/Dev/mise-bootstrap
 git pull
 mise bootstrap
 ```
