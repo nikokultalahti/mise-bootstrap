@@ -283,23 +283,23 @@ fi
 # ==============================================================================
 [bootstrap.hooks.final]
 run = """
-#!/usr/bin/env bash
-set -e
+# #!/usr/bin/env bash
+# set -e
 
-# 1. Flip origin to SSH and enable sync
-url="$(git remote get-url origin 2>/dev/null || true)"
+# # 1. Flip origin to SSH and enable sync
+# url="$(git remote get-url origin 2>/dev/null || true)"
 
-case "$url" in
-  https://github.com/*)
-    ssh_url="$(printf '%s\n' "$url" \
-      | sed -E 's#^https://github\.com/([^/]+)/(.+)$#git@github.com:\1/\2#')"
-    git remote set-url origin "$ssh_url"
-    echo "[✓] Dotfiles origin connected via SSH."
-    ;;
-  *)
-    echo "Origin already uses SSH or is not a GitHub HTTPS URL: $url"
-    ;;
-esac
+# case "$url" in
+#   https://github.com/*)
+#     ssh_url="$(printf '%s\n' "$url" \
+#       | sed -E 's#^https://github\.com/([^/]+)/(.+)$#git@github.com:\1/\2#')"
+#     git remote set-url origin "$ssh_url"
+#     echo "[✓] Dotfiles origin connected via SSH."
+#     ;;
+#   *)
+#     echo "Origin already uses SSH or is not a GitHub HTTPS URL: $url"
+#     ;;
+# esac
 
 # 2. If bootstrapping on a work machine, persist the environment
 {% if vars.machine_type == "work" %}
