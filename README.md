@@ -77,7 +77,7 @@ systemctl reboot
 6. **Encrypted System Files in Public Git:** Sensitive system configs (such as `system/nextdns.age`) remain encrypted in git using `age`. Plaintext secrets never touch disk or git history unencrypted.
 7. **Automatic Remote Protocol Switch:** Boots anonymously via HTTPS, retrieves your SSH key from Bitwarden, and automatically flips the repository's git remote to `git@github.com:...` so future git operations are immediately ready for push.
 8. **Work vs. Personal Multi-Profile:** Sibling profile `mise.work.toml` dynamically customizes git identity, work email, and corporate repository credential helpers without hardcoding.
-9. **Zero-Maintenance Upgrades (Bluefin-Style):** A persistent daily systemd user timer automatically and silently updates all desktop Flatpaks, all global Mise CLI tools (`mise upgrade --yes`), and any Distrobox containers in the background, matching Bluefin's hands-free update model.
+9. **Zero-Maintenance Upgrades:** A persistent daily systemd user timer automatically and silently updates all desktop Flatpaks, all global Mise CLI tools (`mise upgrade --yes`), and any Distrobox containers in the background.
 
 ---
 
