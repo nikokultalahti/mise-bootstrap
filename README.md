@@ -19,6 +19,7 @@ This repository provisions an entire developer workstation from scratch in a sin
 6. **Encrypted System Files in Public Git:** Sensitive system configs (such as `system/nextdns.age`) remain encrypted in git using `age`. Plaintext secrets never touch disk or git history unencrypted.
 7. **Automatic Remote Protocol Switch:** Boots anonymously via HTTPS, retrieves your SSH key from Bitwarden, and automatically flips the repository's git remote to `git@github.com:...` so future git operations are immediately ready for push.
 8. **Work vs. Personal Multi-Profile:** Sibling profile `mise.work.toml` dynamically customizes git identity, work email, and corporate repository credential helpers without hardcoding.
+9. **Zero-Maintenance Upgrades (Bluefin-Style):** A persistent daily systemd user timer automatically and silently updates all desktop Flatpaks, all global Mise CLI tools (`mise upgrade --yes`), and any Distrobox containers in the background.
 
 ---
 
@@ -136,7 +137,10 @@ systemctl reboot
   - Launches the Bitwarden CLI, prompts for authentication, and extracts `~/.ssh/id_ed25519` and your `age` key.
   - Pre-seeds `github.com` into `~/.ssh/known_hosts`.
 - **System Files (`[bootstrap.files]`):** Declaratively manages `/etc/rpm-ostreed.conf` and `/etc/yum.repos.d/vscode.repo` owned by `root`.
-- **System Services (`[bootstrap.services]`):** Enables `rpm-ostreed-automatic.timer` (background OS update staging) and the user-level `podman.socket` (for Dev Containers).
+- **System Services (`[bootstrap.services]` & `[bootstrap.linux.systemd.units]`):** 
+  - Enables `rpm-ostreed-automatic.timer` (background OS update staging).
+  - Starts the user-level rootless `podman.socket` (for Dev Containers).
+  - Deploys and enables `workstation-auto-update.timer` to automatically update Flatpaks, Mise tools, and Distrobox containers daily.
 - **Dotfiles & Templates (`[dotfiles]`):**
   - Symlinks `~/.config/mise/config.toml` back to `~/Dev/dotfiles/mise.toml` (self-managing config).
   - Copies static configs (`atuin`, `bat`, `tealdeer`, `.bashrc`).
@@ -188,5 +192,7 @@ mise bootstrap
 | **Re-apply dotfiles only** | `mise bootstrap dotfiles apply` |
 | **Full machine state check** | `mise bootstrap status` |
 | **Simulate bootstrap apply** | `mise bootstrap --dry-run` |
+| **Check auto-update timer** | `systemctl --user list-timers \| grep workstation` |
+| **Run auto-update manually** | `systemctl --user start dev.mise.workstation-auto-update.service` |
 | **Update all CLI tools** | `mise upgrade` |
 | **Completely uninstall mise** | `mise implode` |

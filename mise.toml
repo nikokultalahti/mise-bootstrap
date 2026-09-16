@@ -199,6 +199,22 @@ state = "running"
 enabled = true
 
 # ==============================================================================
+# LINUX SYSTEMD UNITS FOR AUTOMATIC UPDATES (Flatpaks, Mise Tools & Distrobox)
+# Creates systemd units for zero-maintenance background updates
+# ==============================================================================
+[bootstrap.linux.systemd.units.workstation-auto-update]
+description = "Automatic background update for Flatpaks, Mise tools, and Distrobox containers"
+type = "oneshot"
+exec_start = "/usr/bin/bash -c 'flatpak update -y --noninteractive && %h/.local/bin/mise upgrade --yes && (command -v distrobox-upgrade &>/dev/null && distrobox-upgrade --all || true)'"
+
+[bootstrap.linux.systemd.units.workstation-auto-update-timer]
+description = "Daily background update timer for Flatpaks, Mise tools, and Distrobox containers"
+on_calendar = "daily"
+randomized_delay_sec = "30m"
+persistent = true
+unit = "workstation-auto-update"
+
+# ==============================================================================
 # DOTFILES & TEMPLATES (mise bootstrap dotfiles apply)
 # ==============================================================================
 [dotfiles]
