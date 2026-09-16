@@ -2,6 +2,12 @@
 
 A unified, declarative machine bootstrapper and dotfiles manager for **Fedora Silverblue** and **macOS**, powered entirely by [**mise**](https://mise.jdx.dev): a zero-sudo, cloud-native workflow that handles CLI tools, Flatpaks, system files, secrets, and dotfile templates.
 
+## Use
+
+```mise bootstrap --from https://github.com/nikokultalahti/dotfiles.git --from-dir ~/Dev/dotfiles```
+
+For work machine using the mise.work.toml:
+```mise -E work bootstrap --from https://github.com/nikokultalahti/dotfiles.git --from-dir ~/Dev/dotfiles```
 ---
 
 ## Architecture & Features

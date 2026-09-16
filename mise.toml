@@ -124,32 +124,24 @@ if [[ "$(uname -s)" == "Linux" ]]; then
     fi
 fi
 
-# Fetch AGE secret key from Bitwarden if not already present
-if [[ ! -f "$HOME/.config/age/dotfiles-age-key.txt" ]]; then
-    echo "[-] Logging into Bitwarden to retrieve age decryption key [-]"
+# Check if Bitwarden is already logged in
+if ! $BW_COMMAND login --check >/dev/null 2>&1; then
+    echo "[-] Logging into Bitwarden [-]"
     $BW_COMMAND config server https://vault.bitwarden.eu
     $BW_COMMAND login --apikey
-    BW_SESSION=$($BW_COMMAND unlock --raw)
-    
+else
+    echo "[-] Already logged into Bitwarden [-]"
+fi
+
+# Unlock vault to get a session key for pulling secrets
+BW_SESSION=$($BW_COMMAND unlock --raw)
+
+# Fetch AGE secret key from Bitwarden if not already present
+if [[ ! -f "$HOME/.config/age/dotfiles-age-key.txt" ]]; then    
     mkdir -p "$HOME/.config/age"
     $BW_COMMAND get notes "dotfiles-age-key" --session "$BW_SESSION" > "$HOME/.config/age/dotfiles-age-key.txt"
     chmod 600 "$HOME/.config/age/dotfiles-age-key.txt"
-    echo "[✓] Age secret key successfully restored to ~/.config/age/dotfiles-age-key.txt"
-fi
-
-# Pull GitHub SSH Key for setting up Mise origin later on
-if [[ ! -f "$HOME/.ssh/id_ed25519" ]]; then
-    mkdir -p "$HOME/.ssh"
-    chmod 700 "$HOME/.ssh"
-    $BW_COMMAND get notes "dotfiles-github-auth-key" --session "$BW_SESSION" > "$HOME/.ssh/id_ed25519"
-    chmod 600 "$HOME/.ssh/id_ed25519"
-
-    # Add github.com to known_hosts to prevent interactive SSH prompt
-    touch "$HOME/.ssh/known_hosts"
-    ssh-keyscan -t ed25519 github.com >> "$HOME/.ssh/known_hosts" 2>/dev/null
-
-    echo "[✓] SSH key successfully restored to ~/.ssh/github-auth"
-fi
+    echo "[✓] Age secret key successfully restored to ~/.config/age/dotfiles-age-key.txt
 """
 
 # ==============================================================================
