@@ -206,6 +206,8 @@ enabled = true
 description = "Automatic background update for Flatpaks, Mise tools, and Distrobox containers"
 type = "oneshot"
 exec_start = "/usr/bin/bash -c 'flatpak update -y --noninteractive && %h/.local/bin/mise upgrade --yes && (command -v distrobox-upgrade &>/dev/null && distrobox-upgrade --all || true)'"
+start = false
+wanted_by = []
 
 [bootstrap.linux.systemd.units.workstation-auto-update-timer]
 description = "Daily background update timer for Flatpaks, Mise tools, and Distrobox containers"
