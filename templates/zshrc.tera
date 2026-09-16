@@ -1,0 +1,86 @@
+# .zshrc (managed by mise via zshrc.tera)
+
+autoload -U compinit
+compinit
+
+# Allow tab completion in the middle of a word
+setopt COMPLETE_IN_WORD
+
+# Ensure Mise is on PATH
+export PATH="$HOME/.local/bin:$PATH"
+
+# Activate and initialize CLI tools
+eval "$(mise activate zsh)"
+eval "$(starship init zsh)"
+eval "$(atuin init zsh)"
+eval "$(zoxide init zsh)"
+eval "$(tv init zsh)"
+
+{% if os() == "macos" %}
+# Homebrew environment on macOS
+if [[ -x "/opt/homebrew/bin/brew" ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
+export SSH_AUTH_SOCK="$HOME/.bitwarden-ssh-agent.sock"
+{% else %}
+# Linux Bitwarden Flatpak SSH Agent and CLI alias
+export SSH_AUTH_SOCK="$HOME/.var/app/com.bitwarden.desktop/data/.bitwarden-ssh-agent.sock"
+alias bw="flatpak run --command=bw com.bitwarden.desktop"
+{% endif %}
+
+# Source zsh-autosuggestions and zsh-syntax-highlighting
+{% if os() == "macos" %}
+source $(brew --prefix 2>/dev/null)/share/zsh-autosuggestions/zsh-autosuggestions.zsh 2>/dev/null || true
+source $(brew --prefix 2>/dev/null)/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh 2>/dev/null || true
+{% else %}
+source /usr/share/zsh-autosuggestions/zsh-autosuggestions.zsh 2>/dev/null || true
+source /usr/share/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh 2>/dev/null || true
+{% endif %}
+
+# Set up fzf key bindings and fuzzy completion
+source <(fzf --zsh)
+
+# Add Carapace completions
+export CARAPACE_BRIDGES='zsh,fish,bash,inshellisense'
+zstyle ':completion:*' format $'\e[2;37mCompleting %d\e[m'
+source <(carapace _carapace)
+
+{% if vars.machine_type == "work" %}
+# Google Cloud SDK & work toolchains (macOS)
+if [[ -f "$(brew --prefix 2>/dev/null)/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh.inc" ]]; then
+    source "$(brew --prefix)/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh.inc"
+fi
+
+# Fixes Ghostty backspace bug over gcloud compute ssh & IAP tunnels
+gcloud() {
+    if [[ "$*" == *"compute ssh"* ]]; then
+        TERM=xterm-256color command gcloud "$@"
+    else
+        command gcloud "$@"
+    fi
+}
+
+# Fixes SSH Remote issues with Ghostty
+if [[ -n "$SSH_CONNECTION" ]]; then
+    export TERM=xterm-256color
+fi
+{% endif %}
+
+# ==============================================================================
+# ALIASES
+# ==============================================================================
+if command -v eza >/dev/null 2>&1; then
+    alias ll='eza -al --icons=auto --group-directories-first'
+    alias l.='eza -d .*'
+    alias ls='eza'
+    alias l1='eza -1'
+fi
+
+alias cat='bat --style=plain --pager=never' 2>/dev/null
+
+alias ..='cd ..'
+alias ...='cd ../..'
+alias ~='cd ~'
+
+alias k='kubectl'
+alias kcx='kubectx'

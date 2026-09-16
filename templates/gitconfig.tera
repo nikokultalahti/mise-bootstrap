@@ -1,0 +1,35 @@
+# .gitconfig (managed by mise via gitconfig.tera)
+
+[user]
+    name = Niko Kultalahti
+    email = {{ vars.email }}
+    signingkey = ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHTI6zoCvmPy+Rh0NnkOziJwDGVFRS0aBJyxUcZNqzNi
+[color]
+    ui = auto
+[core]
+{% if vars.machine_type == "personal" %}
+    editor = "flatpak run re.sonny.Commit"
+{% else %}
+    editor = nano
+{% endif %}
+    excludesfile = ~/.gitignore
+[gpg]
+    format = ssh
+[commit]
+    gpgsign = true
+[filter "lfs"]
+    clean = git-lfs clean -- %f
+    smudge = git-lfs smudge -- %f
+    process = git-lfs filter-process
+    required = true
+{% if vars.machine_type == "personal" %}
+[re.sonny.Commit]
+    title-length-hint = 50
+    body-length-wrap = 72
+{% endif %}
+{% if vars.machine_type == "work" %}
+[credential "https://source.developers.google.com"]
+    helper = gcloud.sh
+[url "git@bitbucket.org:"]
+    insteadOf = https://bitbucket.org/
+{% endif %}

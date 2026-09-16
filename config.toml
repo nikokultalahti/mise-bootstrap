@@ -1,0 +1,314 @@
+# ==============================================================================
+# MISE MASTER CONFIGURATION
+# Manages: Tools, Packages (Flathub/Brew), Dotfiles, Systemd, and Auto-Sync
+# ==============================================================================
+
+[settings]
+# Automatically check and update the mise executable in the background
+auto_update = true
+age.key_file = "$HOME/.config/age/dotfiles-age-key.txt"
+dotfiles.root = "~/.dotfiles"
+
+# ==============================================================================
+# VARIABLES
+# Referenced in .tera templates as {{ vars.name }}, {{ vars.email }}, etc.
+# ==============================================================================
+[vars]
+name = "Niko Kultalahti"
+email = "hello@nikokultalahti.com"
+machine_type = "personal"
+
+# ==============================================================================
+# HOOK: PRE-PACKAGES
+# Runs immediately BEFORE Phase 03 ([bootstrap.packages]).
+# Configures Flathub, migrates any Fedora Flatpaks, and disables Fedora remote.
+# ==============================================================================
+[bootstrap.hooks.pre-packages]
+run = """
+#!/usr/bin/env bash
+set -e
+
+if [[ "$(uname -s)" == "Linux" ]] && command -v flatpak &>/dev/null; then
+    echo "[-] Ensuring Flathub is added and prioritized [-]"
+    
+    # 1. Add full Flathub remote if missing
+    flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+
+    # 2. Set Flathub priority high (10) so all app searches and instlls default to Flathub
+    flatpak remote-modify --prio=10 flathub
+    flatpak remote-modify --prio=1 fedora 2>/dev/null || true
+
+    echo "[✓] Flathub is now the primary Flatpak repository"
+fi
+"""
+
+# ==============================================================================
+# PHASE 03: SYSTEM PACKAGES (mise bootstrap packages apply)
+# Guaranteed to install exclusively from Flathub
+# ==============================================================================
+[bootstrap.packages]
+# --- Linux Flatpaks (Flathub) ---
+"flatpak:org.gtk.Gtk3theme.adw-gtk3" = "latest"
+"flatpak:org.gtk.Gtk3theme.adw-gtk3-dark" = "latest"
+"flatpak:org.gnome.Firmware" = "latest"
+"flatpak:com.github.tchx84.Flatseal" = "latest"
+"flatpak:io.github.flattool.Warehouse" = "latest"
+"flatpak:com.mattjakeman.ExtensionManager" = "latest"
+"flatpak:io.github.flattool.Ignition" = "latest"
+"flatpak:io.gitlab.adhami3310.Impression" = "latest"
+"flatpak:org.gnome.World.PikaBackup" = "latest"
+"flatpak:page.tesk.Refine" = "latest"
+"flatpak:io.github.getnf.embellish" = "latest"
+"flatpak:com.bitwarden.desktop" = "latest"
+"flatpak:com.github.marhkb.Pods" = "latest"
+"flatpak:org.gnome.Boxes" = "latest"
+"flatpak:com.ranfdev.DistroShelf" = "latest"
+"flatpak:org.mozilla.firefox" = "latest"
+"flatpak:org.mozilla.thunderbird_esr" = "latest"
+"flatpak:org.libreoffice.LibreOffice" = "latest"
+"flatpak:dev.qwery.AddWater" = "latest"
+"flatpak:io.github.qwersyk.Newelle" = "latest"
+"flatpak:app.drey.Dialect" = "latest"
+"flatpak:be.alexandervanhee.gradia" = "latest"
+"flatpak:cafe.avery.Delfin" = "latest"
+"flatpak:com.github.PintaProject.Pinta" = "latest"
+"flatpak:com.github.jeromerobert.pdfarranger" = "latest"
+"flatpak:com.nextcloud.desktopclient.nextcloud" = "latest"
+"flatpak:com.yubico.yubioath" = "latest"
+"flatpak:de.haeckerfelix.Fragments" = "latest"
+"flatpak:de.schmidhuberj.tubefeeder" = "latest" # Pipeline
+"flatpak:org.nickvision.tubeconverter" = "latest" # Parabolic
+"flatpak:dev.geopjr.Tuba" = "latest"
+"flatpak:io.github.alainm23.planify" = "latest"
+"flatpak:md.obsidian.Obsidian" = "latest"
+"flatpak:org.gnome.World.Iotas" = "latest"
+"flatpak:org.gnome.gitlab.cheywood.Pulp" = "latest"
+"flatpak:org.gnome.gitlab.somas.Apostrophe" = "latest"
+"flatpak:org.signal.Signal" = "latest"
+"flatpak:re.sonny.Eloquent" = "latest"
+"flatpak:app.fotema.Fotema" = "latest"
+"flatpak:com.github.maoschanz.drawing" = "latest"
+"flatpak:io.gitlab.adhami3310.Converter" = "latest"
+"flatpak:page.codeberg.censor.Censor" = "latest"
+
+# --- Dev Tools ---
+"flatpak:dev.zed.Zed" = "latest"
+"flatpak:re.sonny.Commit" = "latest" 
+"flatpak:me.iepure.devtoolbox" = "latest"
+"flatpak:com.mardojai.ForgeSparks" = "latest"
+"flatpak:de.wwwtech.gitte" = "latest"
+
+# Hook running immediately after packages are installed:
+# 1. Configures GNOME Software for automatic background Flatpak updates.
+# 2. Uses the newly installed Bitwarden Flatpak CLI to log in and fetch the AGE key.
+[bootstrap.hooks.post-packages]
+run = """
+#!/usr/bin/env bash
+set -e
+
+# Set bw command to variable depending on whether running via Flatpak (Linux) or normal bw cli (MacOS)
+if [[ "$(uname -s)" == "Linux" ]]; then
+    BW_COMMAND="flatpak run --command=bw com.bitwarden.desktop"
+fi
+
+if [[ "$(uname -s)" == "Darwin" ]]; then
+    BW_COMMAND="bw"
+fi
+
+
+if [[ "$(uname -s)" == "Linux" ]]; then
+    # Enable GNOME Software background updates
+    if command -v gsettings &>/dev/null; then
+        gsettings set org.gnome.software download-updates true
+        gsettings set org.gnome.software download-updates-notify true
+        echo "[✓] Automatic GNOME Software updates turnead on"
+    fi
+fi
+
+# Fetch AGE secret key from Bitwarden if not already present
+if [[ ! -f "$HOME/.config/age/dotfiles-age-key.txt" ]]; then
+    echo "[-] Logging into Bitwarden to retrieve age decryption key [-]"
+    $BW_COMMAND config server https://vault.bitwarden.eu
+    $BW_COMMAND login --apikey
+    BW_SESSION=$($BW_COMMAND unlock --raw)
+    
+    mkdir -p "$HOME/.config/age"
+    $BW_COMMAND get notes "dotfiles-age-key" --session "$BW_SESSION" > "$HOME/.config/age/dotfiles-age-key.txt"
+    chmod 600 "$HOME/.config/age/dotfiles-age-key.txt"
+    echo "[✓] Age secret key successfully restored to ~/.config/age/dotfiles-age-key.txt"
+fi
+
+# Pull GitHub SSH Key for setting up Mise origin later on
+if [[ ! -f "$HOME/.ssh/id_ed25519" ]]; then
+    mkdir -p "$HOME/.ssh"
+    chmod 700 "$HOME/.ssh"
+    $BW_COMMAND get notes "dotfiles-github-auth-key" --session "$BW_SESSION" > "$HOME/.ssh/id_ed25519"
+    chmod 600 "$HOME/.ssh/id_ed25519"
+
+    # Add github.com to known_hosts to prevent interactive SSH prompt
+    touch "$HOME/.ssh/known_hosts"
+    ssh-keyscan -t ed25519 github.com >> "$HOME/.ssh/known_hosts" 2>/dev/null
+
+    echo "[✓] SSH key successfully restored to ~/.ssh/github-auth"
+fi
+"""
+
+# ==============================================================================
+# PHASE 04: SYSTEM FILES (mise bootstrap files apply)
+# ==============================================================================
+# Replaces /etc/rpm-ostreed.conf for automatic staged updates
+[bootstrap.files."/etc/rpm-ostreed.conf"]
+source = "system/rpm-ostreed.conf"
+owner = "root"
+mode = "0644"
+notify = ["rpm-ostreed-automatic.timer"]
+
+# Sets up repository for VSCode to be layered
+[bootstrap.files."/etc/yum.repos.d/vscode.repo"]
+source = "system/vscode.repo"
+owner = "root"
+mode = "0644"
+
+# Ensure the directory exists for NextDNS config
+[bootstrap.directories."/etc/systemd/resolved.conf.d"]
+owner = "root"
+mode = "0755"
+
+# ==============================================================================
+# PHASE 05: SYSTEM SERVICES (mise bootstrap services apply)
+# Converges systemd units (both system-level timers and user sockets)
+# ==============================================================================
+[bootstrap.services."rpm-ostreed-automatic.timer"]
+# Enables and starts the staged OS update timer on Silverblue
+state = "running"
+enabled = true
+
+[bootstrap.services."podman.socket"]
+# Enables and starts the rootless Podman user socket for Dev Containers
+state = "running"
+enabled = true
+
+# ==============================================================================
+# PHASE 09: DOTFILES & TEMPLATES (mise bootstrap dotfiles apply)
+# ==============================================================================
+[dotfiles]
+# --- Self-managing Mise config ---
+"~/.dotfiles" = "~/Dev/dotfiles"
+"~/.config/mise/config.toml" = "~/Dev/dotfiles/config.toml"
+"~/.config/mise/config.work.toml" = "~/Dev/dotfiles/config.work.toml"
+
+# --- Static Configuration Files ---
+"~/.config/atuin/config.toml"           = { source = ".config/atuin/config.toml", mode = "copy" }
+"~/.config/bat"                         = { source = ".config/bat", mode = "copy" }
+"~/.config/tealdeer/config.toml"        = { source = ".config/tealdeer/config.toml", mode = "copy" }
+"~/.bashrc"                             = { source = ".bashrc", mode = "copy" }
+
+# --- Dynamic Templates ---
+"~/.zshrc"                              = { source = "templates/zshrc.tera", mode = "template" }
+"~/.zprofile"                           = { source = "templates/zprofile.tera", mode = "template" }
+"~/.gitconfig"                          = { source = "templates/gitconfig.tera", mode = "template" }
+
+[dotfiles."vscode/settings.json"]
+source = ".config/vscode/settings.tera"
+mode = "template" 
+variants = [
+  { os = "macos", target = "~/Library/Application Support/Code/User/settings.json" },
+  { os = "linux", target = "~/.config/Code/User/settings.json" }
+]
+
+# ==============================================================================
+# PHASE 15: TOOLS (mise install)
+# ==============================================================================
+[tools]
+age = "latest"            # Required for decrypting files
+atuin = "latest"
+bat = "latest"
+carapace = "latest"
+eza = "latest"
+fd = "latest"
+fzf = "latest"
+gh = "latest"
+jq = "latest"
+pre-commit = "latest"
+ripgrep = "latest"
+shellcheck = "latest"
+starship = "latest"
+tealdeer = "latest"
+television = "latest"
+yq = "latest"
+yt-dlp = "latest"
+zoxide = "latest"
+"github:timrogers/litra-rs" = "latest"
+"github:timrogers/litra-autotoggle" = "latest"
+"github:aaif-goose/goose" = "latest"
+
+# ==============================================================================
+# PHASE 18: DECRYPT 
+# Decrypts secrets using age immediately after tools are installed
+# ==============================================================================
+[bootstrap.hooks.post-tools]
+run = """
+#!/usr/bin/env bash
+set -e
+
+AGE_KEY="$HOME/.config/age/dotfiles-age-key.txt"
+
+if [[ ! -f "$AGE_KEY" ]]; then
+    echo "[!] Warning: Age key not found at $AGE_KEY; skipping decryption."
+    exit 0
+fi
+
+ENCRYPTED_DNS="$HOME/Dev/dotfiles/system/nextdns.age"
+DECRYPTED_DNS="/etc/systemd/resolved.conf.d/nextdns.conf"
+
+# ------------------------------------------------------------------------------
+# Decrypt System NextDNS Config (Linux only: /etc/systemd/resolved.conf.d/)
+# ------------------------------------------------------------------------------
+if [[ "$(uname -s)" == "Linux" && -f "$ENCRYPTED_DNS" ]]; then
+
+    echo "[-] Configuring NextDNS in systemd-resolved [-]"
+
+    # Stream decrypt directly into destination (no plaintext ever touches /tmp)
+    age -d -i "$AGE_KEY" "$ENCRYPTED_DNS" | sudo tee "$DECRYPTED_DNS" > /dev/null
+    sudo chmod 644 "$DECRYPTED_DNS"
+
+    # Restart systemd-resolved to apply the new DNS immediately
+    sudo systemctl restart systemd-resolved
+    echo "[✓] NextDNS configured and systemd-resolved restarted"
+fi
+"""
+
+# ==============================================================================
+# PHASE 19: FINAL HOOK (mise bootstrap final-hook)
+# ==============================================================================
+[bootstrap.hooks.final]
+run = """
+#!/usr/bin/env bash
+set -e
+
+# 1. Flip origin to SSH and enable sync
+url="$(git remote get-url origin 2>/dev/null || true)"
+
+case "$url" in
+  https://github.com/*)
+    ssh_url="$(printf '%s\n' "$url" \
+      | sed -E 's#^https://github\.com/([^/]+)/(.+)$#git@github.com:\1/\2#')"
+    git remote set-url origin "$ssh_url"
+    echo "[✓] Dotfiles origin connected via SSH."
+    ;;
+  *)
+    echo "Origin already uses SSH or is not a GitHub HTTPS URL: $url"
+    ;;
+esac
+
+# 2. If bootstrapping on a work machine, persist the environment
+{% if vars.machine_type == "work" %}
+mise settings set env work
+echo "[✓] Machine permanently configured with 'work' profile in config.local.toml"
+{% endif %}
+
+echo ""
+echo "=================================================================="
+echo "🎉 Bootstrap complete!" 
+echo "=================================================================="
+"""

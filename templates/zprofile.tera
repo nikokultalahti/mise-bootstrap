@@ -1,0 +1,21 @@
+# .zprofile (managed by mise via zprofile.tera)
+
+# Ensure ~/.local/bin and ~/bin are in $PATH
+if ! [[ "$PATH" =~ "$HOME/bin" ]]; then
+    PATH="$HOME/bin:$PATH"
+fi
+if ! [[ "$PATH" =~ "$HOME/.local/bin:" ]]; then
+    PATH="$HOME/.local/bin:$PATH"
+fi
+export PATH
+
+# Set Bitwarden SSH agent for dev containers
+{% if os() == "linux" %}
+export SSH_AUTH_SOCK="$HOME/.var/app/com.bitwarden.desktop/data/.bitwarden-ssh-agent.sock"
+{% endif %}
+{% if os() == "macos" %}
+export SSH_AUTH_SOCK="$HOME/.bitwarden-ssh-agent.sock"
+if [[ -x "/opt/homebrew/bin/brew" ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+fi
+{% endif %}
