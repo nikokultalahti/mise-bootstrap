@@ -7,7 +7,6 @@
 # Automatically check and update the mise executable in the background
 auto_update = true
 age.key_file = "$HOME/.config/age/dotfiles-age-key.txt"
-dotfiles.root = "~/.dotfiles"
 
 # ==============================================================================
 # VARIABLES
@@ -193,9 +192,8 @@ enabled = true
 # ==============================================================================
 [dotfiles]
 # --- Self-managing Mise config ---
-#"~/.dotfiles" = "~/Dev/dotfiles"
-#"~/.config/mise/config.toml" = "~/Dev/dotfiles/config.toml"
-#"~/.config/mise/config.work.toml" = "~/Dev/dotfiles/config.work.toml"
+"~/.config/mise/config.toml" = { source = "config.toml", mode = "symlink" }
+"~/.config/mise/config.work.toml" = {source = "config.work.toml", mode = "symlink" }
 
 # --- Static Configuration Files ---
 "~/.config/atuin/config.toml"           = { source = ".config/atuin/config.toml", mode = "copy" }
@@ -258,7 +256,7 @@ if [[ ! -f "$AGE_KEY" ]]; then
     exit 0
 fi
 
-ENCRYPTED_DNS="/system/nextdns.age"
+ENCRYPTED_DNS="$HOME/Dev/dotfiles/system/nextdns.age"
 DECRYPTED_DNS="/etc/systemd/resolved.conf.d/nextdns.conf"
 
 # ------------------------------------------------------------------------------
@@ -284,7 +282,6 @@ fi
 [bootstrap.hooks.final]
 run = """
 
-# 2. If bootstrapping on a work machine, persist the environment
 {% if vars.machine_type == "work" %}
 mise settings set env work
 echo "[✓] Machine permanently configured with 'work' profile in config.local.toml"
