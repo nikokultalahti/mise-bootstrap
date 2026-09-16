@@ -294,7 +294,8 @@ if [[ -d "$REPO_DIR/.git" ]]; then
         echo "[-] Converting git origin from HTTPS to SSH in $REPO_DIR [-]"
         
         # Converts https://github.com/user/repo(.git) to git@github.com:user/repo.git
-        SSH_ORIGIN=$(echo "$CURRENT_ORIGIN" | sed -E 's#^https://github\.com/([^/]+)/([^/]+?)(\.git)?$#git@github.com:\1/\2.git#')
+        SSH_ORIGIN="git@github.com:${CURRENT_ORIGIN#https://github.com/}"
+        [[ "$SSH_ORIGIN" != *.git ]] && SSH_ORIGIN="${SSH_ORIGIN}.git"
         
         git -C "$REPO_DIR" remote set-url origin "$SSH_ORIGIN"
         echo "[✓] Git origin updated to: $SSH_ORIGIN"
