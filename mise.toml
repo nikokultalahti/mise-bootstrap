@@ -265,6 +265,9 @@ if [[ ! -f "$AGE_KEY" ]]; then
 fi
 
 ENCRYPTED_DNS="$HOME/Dev/dotfiles/system/nextdns.age"
+if [[ ! -f "$ENCRYPTED_DNS" && -f "$PWD/system/nextdns.age" ]]; then
+    ENCRYPTED_DNS="$PWD/system/nextdns.age"
+fi
 DECRYPTED_DNS="/etc/systemd/resolved.conf.d/nextdns.conf"
 
 # ------------------------------------------------------------------------------
@@ -275,7 +278,7 @@ if [[ "$(uname -s)" == "Linux" && -f "$ENCRYPTED_DNS" ]]; then
     echo "[-] Configuring NextDNS in systemd-resolved [-]"
 
     # Stream decrypt directly into destination (no plaintext ever touches /tmp)
-    age -d -i "$AGE_KEY" "$ENCRYPTED_DNS" | sudo tee "$DECRYPTED_DNS" > /dev/null
+    mise exec -- age -d -i "$AGE_KEY" "$ENCRYPTED_DNS" | sudo tee "$DECRYPTED_DNS" > /dev/null
     sudo chmod 644 "$DECRYPTED_DNS"
 
     # Restart systemd-resolved to apply the new DNS immediately
