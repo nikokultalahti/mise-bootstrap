@@ -124,24 +124,28 @@ if [[ "$(uname -s)" == "Linux" ]]; then
     fi
 fi
 
-# Check if Bitwarden is already logged in
-if ! $BW_COMMAND login --check >/dev/null 2>&1; then
-    echo "[-] Logging into Bitwarden [-]"
-    $BW_COMMAND config server https://vault.bitwarden.eu
-    $BW_COMMAND login --apikey
-else
-    echo "[-] Already logged into Bitwarden [-]"
+if [[ ! -f "$HOME/.config/age/dotfiles-age-key.txt"]]; then
+    echo "[-] Checking Bitwarden authentication to fetch secrets [-]"
+    
+    # 1. Only configure server and login if NOT already authenticated
+    if ! $BW_COMMAND login --check >/dev/null 2>&1; then
+        $BW_COMMAND config server https://vault.bitwarden.eu
+        $BW_COMMAND login --apikey
+    else
+        echo "[✓] Bitwarden already configured and logged in"
+    fi
+
+    # 2. Unlock vault for this session
+    BW_SESSION=$($BW_COMMAND unlock --raw)
+
+    # 3. Pull Age secret key if missing
+    if [[ ! -f "$HOME/.config/age/dotfiles-age-key.txt" ]]; then
+        mkdir -p "$HOME/.config/age"
+        $BW_COMMAND get notes "dotfiles-age-key" --session "$BW_SESSION" > "$HOME/.config/age/dotfiles-age-key.txt"
+        chmod 600 "$HOME/.config/age/dotfiles-age-key.txt"
+        echo "[✓] Age secret key restored to ~/.config/age/dotfiles-age-key.txt"
+    fi
 fi
-
-# Unlock vault to get a session key for pulling secrets
-BW_SESSION=$($BW_COMMAND unlock --raw)
-
-# Fetch AGE secret key from Bitwarden if not already present
-if [[ ! -f "$HOME/.config/age/dotfiles-age-key.txt" ]]; then    
-    mkdir -p "$HOME/.config/age"
-    $BW_COMMAND get notes "dotfiles-age-key" --session "$BW_SESSION" > "$HOME/.config/age/dotfiles-age-key.txt"
-    chmod 600 "$HOME/.config/age/dotfiles-age-key.txt"
-    echo "[✓] Age secret key successfully restored to ~/.config/age/dotfiles-age-key.txt
 """
 
 # ==============================================================================
@@ -274,7 +278,36 @@ fi
 [bootstrap.hooks.final]
 run = """
 
+# ------------------------------------------------------------------------------
+# 1. Switch Git Origin from HTTPS to SSH
+# ------------------------------------------------------------------------------
+REPO_DIR="$HOME/Dev/dotfiles"
+
+# Fallback to current working directory if ~/Dev/dotfiles is not where it was cloned
+if [[ ! -d "$REPO_DIR/.git" && -d "$PWD/.git" ]]; then
+    REPO_DIR="$PWD"
+fi
+
+if [[ -d "$REPO_DIR/.git" ]]; then
+    CURRENT_ORIGIN=$(git -C "$REPO_DIR" remote get-url origin 2>/dev/null || true)
+    if [[ "$CURRENT_ORIGIN" == https://github.com/* ]]; then
+        echo "[-] Converting git origin from HTTPS to SSH in $REPO_DIR [-]"
+        
+        # Converts https://github.com/user/repo(.git) to git@github.com:user/repo.git
+        SSH_ORIGIN=$(echo "$CURRENT_ORIGIN" | sed -E 's#^https://github\.com/([^/]+)/([^/]+?)(\.git)?$#git@github.com:\1/\2.git#')
+        
+        git -C "$REPO_DIR" remote set-url origin "$SSH_ORIGIN"
+        echo "[✓] Git origin updated to: $SSH_ORIGIN"
+    else
+        echo "[✓] Git origin is already using SSH or custom remote"
+    fi
+fi
+
+# ------------------------------------------------------------------------------
+# 2. Persist Work Profile if applicable
+# ------------------------------------------------------------------------------
 {% if vars.machine_type == "work" %}
+echo "[-] Persisting work environment settings [-]"
 mise settings set env work
 echo "[✓] Machine permanently configured with 'work' profile in config.local.toml"
 {% endif %}
