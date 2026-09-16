@@ -1,6 +1,6 @@
 # ==============================================================================
 # MISE MASTER CONFIGURATION
-# Manages: Tools, Packages (Flathub/Brew), Dotfiles, Systemd, and Auto-Sync
+# Manages: Tools, Packages (Flathub/Brew), Dotfiles, Systemd, etc.
 # ==============================================================================
 
 [settings]
@@ -19,7 +19,7 @@ machine_type = "personal"
 
 # ==============================================================================
 # HOOK: PRE-PACKAGES
-# Runs immediately BEFORE Phase 03 ([bootstrap.packages]).
+# Runs immediately BEFORE bootstrap.packages.
 # Configures Flathub, migrates any Fedora Flatpaks, and disables Fedora remote.
 # ==============================================================================
 [bootstrap.hooks.pre-packages]
@@ -42,7 +42,7 @@ fi
 """
 
 # ==============================================================================
-# PHASE 03: SYSTEM PACKAGES (mise bootstrap packages apply)
+# SYSTEM PACKAGES (mise bootstrap packages apply)
 # Guaranteed to install exclusively from Flathub
 # ==============================================================================
 [bootstrap.packages]
@@ -97,9 +97,12 @@ fi
 "flatpak:com.mardojai.ForgeSparks" = "latest"
 "flatpak:de.wwwtech.gitte" = "latest"
 
-# Hook running immediately after packages are installed:
+# ============================================================================================
+# HOOK: POST-PACKAGES
+# Runs immediately AFTER bootstrap.packages.
 # 1. Configures GNOME Software for automatic background Flatpak updates.
-# 2. Uses the newly installed Bitwarden Flatpak CLI to log in and fetch the AGE key.
+# 2. Uses the newly installed Bitwarden Flatpak CLI to log in and fetch the AGE and SSH keys.
+# ============================================================================================
 [bootstrap.hooks.post-packages]
 run = """
 #!/usr/bin/env bash
@@ -161,7 +164,7 @@ fi
 """
 
 # ==============================================================================
-# PHASE 04: SYSTEM FILES (mise bootstrap files apply)
+# SYSTEM FILES (mise bootstrap files apply)
 # ==============================================================================
 # Replaces /etc/rpm-ostreed.conf for automatic staged updates
 [bootstrap.files."/etc/rpm-ostreed.conf"]
@@ -182,7 +185,7 @@ owner = "root"
 mode = "0755"
 
 # ==============================================================================
-# PHASE 05: SYSTEM SERVICES (mise bootstrap services apply)
+# SYSTEM SERVICES (mise bootstrap services apply)
 # Converges systemd units (both system-level timers and user sockets)
 # ==============================================================================
 [bootstrap.services."rpm-ostreed-automatic.timer"]
@@ -196,7 +199,7 @@ state = "running"
 enabled = true
 
 # ==============================================================================
-# PHASE 09: DOTFILES & TEMPLATES (mise bootstrap dotfiles apply)
+# DOTFILES & TEMPLATES (mise bootstrap dotfiles apply)
 # ==============================================================================
 [dotfiles]
 # --- Self-managing Mise config ---
@@ -223,7 +226,7 @@ variants = [
 ]
 
 # ==============================================================================
-# PHASE 15: TOOLS (mise install)
+# TOOLS (mise install)
 # ==============================================================================
 [tools]
 age = "latest"            # Required for decrypting files
@@ -249,7 +252,7 @@ zoxide = "latest"
 "github:aaif-goose/goose" = "latest"
 
 # ==============================================================================
-# PHASE 18: DECRYPT 
+# DECRYPT SYSTEM SECRETS
 # Decrypts secrets using age immediately after tools are installed
 # ==============================================================================
 [bootstrap.hooks.post-tools]
@@ -288,7 +291,7 @@ fi
 """
 
 # ==============================================================================
-# PHASE 19: FINAL HOOK (mise bootstrap final-hook)
+# FINAL HOOK (mise bootstrap final-hook)
 # ==============================================================================
 [bootstrap.hooks.final]
 run = """
