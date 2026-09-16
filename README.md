@@ -74,7 +74,7 @@ systemctl reboot
 5. **Zero-Knowledge Secret Recovery via Bitwarden:** During initial bootstrap, the Bitwarden Desktop Flatpak CLI interactively authenticates once to retrieve:
    - Your private OpenSSH key into `~/.ssh/id_ed25519`
    - Your `age` decryption key into `~/.config/age/dotfiles-age-key.txt`
-6. **Encrypted System Files in Public Git:** Sensitive system configs (such as `system/nextdns.age`) remain encrypted in git using `age`. Plaintext secrets never touch disk or git history unencrypted.
+6. **Encrypted System Files in Public Git:** Sensitive system configs (such as `system_files/nextdns.age`) remain encrypted in git using `age`. Plaintext secrets never touch disk or git history unencrypted.
 7. **Automatic Remote Protocol Switch:** Boots anonymously via HTTPS, retrieves your SSH key from Bitwarden, and automatically flips the repository's git remote to `git@github.com:...` so future git operations are immediately ready for push.
 8. **Work vs. Personal Multi-Profile:** Sibling profile `mise.work.toml` dynamically customizes git identity, work email, and corporate repository credential helpers without hardcoding.
 9. **Zero-Maintenance Upgrades:** A persistent daily systemd user timer automatically and silently updates all desktop Flatpaks, all global Mise CLI tools (`mise upgrade --yes`), and any Distrobox containers in the background.
@@ -132,21 +132,22 @@ systemctl reboot
 dotfiles/
 ├── mise.toml                  # Master machine configuration & bootstrap phases
 ├── mise.work.toml             # Work environment overrides (email, machine type)
-├── bootstrap.sh               # One-liner bootstrap wrapper
-├── system/                    # Privileged /etc system files
+├── system_files/              # Privileged /etc system files
 │   ├── nextdns.age            # Encrypted NextDNS systemd-resolved config
 │   ├── rpm-ostreed.conf       # Staged background OS updates configuration
 │   └── vscode.repo            # Official Microsoft repository for VS Code layering
-├── templates/                 # Dynamic dotfiles rendered via Tera template engine
+├── dotfiles/                  # Dotfiles and templates
+│   ├── .bashrc                # Static bash fallback config
+│   ├── .config/               # Static application configs
+│   │   ├── atuin/config.toml  # Shell history sync settings
+│   │   ├── bat/               # Bat syntax highlighter config & themes
+│   │   ├── tealdeer/config.toml # Fast tldr client settings
+│   │   └── vscode/settings.tera # VS Code settings (container sockets & themes)
+│   ├── .ssh/                  # Encrypted SSH config
+│   │   └── ssh_config_personal.age
 │   ├── gitconfig.tera         # Git config with conditional work/personal profiles
-│   ├── zshrc.tera             # Zsh configuration, tool inits, and completions
-│   └── zprofile.tera          # Environment & PATH setup
-├── .config/                   # Static application configs
-│   ├── atuin/config.toml      # Shell history sync settings
-│   ├── bat/                   # Bat syntax highlighter config & themes
-│   ├── tealdeer/config.toml   # Fast tldr client settings
-│   └── vscode/settings.tera   # VS Code settings (container sockets & themes)
-├── .bashrc                    # Static bash fallback config
+│   ├── zprofile.tera          # Environment & PATH setup
+│   └── zshrc.tera             # Zsh configuration, tool inits, and completions
 └── README.md
 ```
 

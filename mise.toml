@@ -168,14 +168,14 @@ fi
 # ==============================================================================
 # Replaces /etc/rpm-ostreed.conf for automatic staged updates
 [bootstrap.files."/etc/rpm-ostreed.conf"]
-source = "system/rpm-ostreed.conf"
+source = "system_files/rpm-ostreed.conf"
 owner = "root"
 mode = "0644"
 notify = ["rpm-ostreed-automatic.timer"]
 
 # Sets up repository for VSCode to be layered
 [bootstrap.files."/etc/yum.repos.d/vscode.repo"]
-source = "system/vscode.repo"
+source = "system_files/vscode.repo"
 owner = "root"
 mode = "0644"
 
@@ -207,18 +207,18 @@ enabled = true
 "~/.config/mise/config.work.toml" = {source = "mise.work.toml", mode = "symlink" }
 
 # --- Static Configuration Files ---
-"~/.config/atuin/config.toml"           = { source = ".config/atuin/config.toml", mode = "copy" }
-"~/.config/bat"                         = { source = ".config/bat", mode = "copy" }
-"~/.config/tealdeer/config.toml"        = { source = ".config/tealdeer/config.toml", mode = "copy" }
-"~/.bashrc"                             = { source = ".bashrc", mode = "copy" }
+"~/.config/atuin/config.toml"           = { source = "dotfiles/.config/atuin/config.toml", mode = "copy" }
+"~/.config/bat"                         = { source = "dotfiles/.config/bat", mode = "copy" }
+"~/.config/tealdeer/config.toml"        = { source = "dotfiles/.config/tealdeer/config.toml", mode = "copy" }
+"~/.bashrc"                             = { source = "dotfiles/.bashrc", mode = "copy" }
 
 # --- Dynamic Templates ---
-"~/.zshrc"                              = { source = "templates/zshrc.tera", mode = "template" }
-"~/.zprofile"                           = { source = "templates/zprofile.tera", mode = "template" }
-"~/.gitconfig"                          = { source = "templates/gitconfig.tera", mode = "template" }
+"~/.zshrc"                              = { source = "dotfiles/zshrc.tera", mode = "template" }
+"~/.zprofile"                           = { source = "dotfiles/zprofile.tera", mode = "template" }
+"~/.gitconfig"                          = { source = "dotfiles/gitconfig.tera", mode = "template" }
 
 [dotfiles."vscode/settings.json"]
-source = ".config/vscode/settings.tera"
+source = "dotfiles/.config/vscode/settings.tera"
 mode = "template" 
 variants = [
   { os = "macos", target = "~/Library/Application Support/Code/User/settings.json" },
@@ -288,7 +288,7 @@ fi
 # ------------------------------------------------------------------------------
 # 1. Decrypt User SSH Config (~/.ssh/config)
 # ------------------------------------------------------------------------------
-ENCRYPTED_SSH="$HOME/Dev/dotfiles/.ssh/ssh_config_personal.age"
+ENCRYPTED_SSH="$HOME/Dev/dotfiles/dotfiles/.ssh/ssh_config_personal.age"
 if [[ ! -f "$ENCRYPTED_SSH" && -f "$PWD/.ssh/ssh_config_personal.age" ]]; then
     ENCRYPTED_SSH="$PWD/.ssh/ssh_config_personal.age"
 fi
@@ -308,9 +308,9 @@ fi
 # 2. Decrypt System NextDNS Config (Linux only: /etc/systemd/resolved.conf.d/)
 # ------------------------------------------------------------------------------
 
-ENCRYPTED_DNS="$HOME/Dev/dotfiles/system/nextdns.age"
-if [[ ! -f "$ENCRYPTED_DNS" && -f "$PWD/system/nextdns.age" ]]; then
-    ENCRYPTED_DNS="$PWD/system/nextdns.age"
+ENCRYPTED_DNS="$HOME/Dev/dotfiles/dotfiles/system_files/nextdns.age"
+if [[ ! -f "$ENCRYPTED_DNS" && -f "$PWD/system_files/nextdns.age" ]]; then
+    ENCRYPTED_DNS="$PWD/system_files/nextdns.age"
 fi
 DECRYPTED_DNS="/etc/systemd/resolved.conf.d/nextdns.conf"
 
