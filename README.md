@@ -1,64 +1,23 @@
 # Declarative Workstation Bootstrap & Dotfiles with Mise
 
 A unified, declarative machine bootstrapper and dotfiles management system for **Fedora Silverblue** and **macOS**, powered natively by [**mise**](https://mise.jdx.dev).
-**Note:** At the moment only thoroughly tested on Silverblue.
 
-This repository provisions an entire developer workstation from scratch in a single command: GUI applications (Flatpaks), system-level configurations (`/etc`), rootless container sockets, shell dotfile templates, versioned CLI tools, and encrypted secrets.
+This repository provisions an entire developer workstation from scratch in a single command: desktop applications (Flatpaks), system-level configurations (`/etc`), rootless container sockets, shell dotfile templates, versioned CLI tools, and encrypted secrets.
 
----
-
-## Architecture & Core Philosophy
-
-1. **Zero-Sudo Initial Entry Point:** The setup begins entirely in user space over public HTTPS. Root privileges are never required upfront to clone or initialize the machine.
-2. **Immutable Host Boundary (Silverblue):** Keep host OS layering minimal. The immutable host is reserved strictly for the kernel, display server, GPU drivers, terminal emulator, multiplexer (`tmux`), and container runtimes (`podman`, `distrobox`).
-3. **GUI Applications via Flathub:** Desktop apps are installed exclusively from Flathub. Flathub builds bundle required codecs and runtimes, eliminating host package conflicts and dirty codec layering.
-4. **User-Space CLI Tooling:** Developer CLI binaries (`starship`, `atuin`, `eza`, `ripgrep`, `fzf`, `gh`, `age`, etc.) are installed directly into `~/.local/share/mise` via GitHub releases and Aqua registries rather than host package layers or Homebrew.
-5. **Zero-Knowledge Secret Recovery via Bitwarden:** During initial bootstrap, the Bitwarden Desktop Flatpak CLI interactively authenticates once to retrieve:
-   - Your private OpenSSH key into `~/.ssh/id_ed25519`
-   - Your `age` decryption key into `~/.config/age/dotfiles-age-key.txt`
-6. **Encrypted System Files in Public Git:** Sensitive system configs (such as `system/nextdns.age`) remain encrypted in git using `age`. Plaintext secrets never touch disk or git history unencrypted.
-7. **Automatic Remote Protocol Switch:** Boots anonymously via HTTPS, retrieves your SSH key from Bitwarden, and automatically flips the repository's git remote to `git@github.com:...` so future git operations are immediately ready for push.
-8. **Work vs. Personal Multi-Profile:** Sibling profile `mise.work.toml` dynamically customizes git identity, work email, and corporate repository credential helpers without hardcoding.
-9. **Zero-Maintenance Upgrades (Bluefin-Style):** A persistent daily systemd user timer automatically and silently updates all desktop Flatpaks, all global Mise CLI tools (`mise upgrade --yes`), and any Distrobox containers in the background.
-
----
-
-## Repository Structure
-
-```text
-dotfiles/
-├── mise.toml                  # Master machine configuration & bootstrap phases
-├── mise.work.toml             # Work environment overrides (email, machine type)
-├── bootstrap.sh               # One-liner bootstrap wrapper
-├── system/                    # Privileged /etc system files
-│   ├── nextdns.age            # Encrypted NextDNS systemd-resolved config
-│   ├── rpm-ostreed.conf       # Staged background OS updates configuration
-│   └── vscode.repo            # Official Microsoft repository for VS Code layering
-├── templates/                 # Dynamic dotfiles rendered via Tera template engine
-│   ├── gitconfig.tera         # Git config with conditional work/personal profiles
-│   ├── zshrc.tera             # Zsh configuration, tool inits, and completions
-│   └── zprofile.tera          # Environment & PATH setup
-├── .config/                   # Static application configs
-│   ├── atuin/config.toml      # Shell history sync settings
-│   ├── bat/                   # Bat syntax highlighter config & themes
-│   ├── tealdeer/config.toml   # Fast tldr client settings
-│   └── vscode/settings.tera   # VS Code settings (container sockets & themes)
-├── .bashrc                    # Static bash fallback config
-└── README.md
-```
+> **Note:** Thoroughly tested on Fedora Silverblue; macOS support is structured and ready for platform overlays.
 
 ---
 
 ## Prerequisites (Bitwarden Vault)
 
-Before bootstrapping a new computer, ensure your Bitwarden vault contains two **Secure Notes**:
+Before bootstrapping a fresh computer, ensure your Bitwarden vault contains two **Secure Notes**:
 
 1. **`dotfiles-github-auth-key`**:
    Your OpenSSH private key with push access to your GitHub account (`-----BEGIN OPENSSH PRIVATE KEY-----`).
 2. **`dotfiles-age-key`**:
    Your raw `age` private key (`AGE-SECRET-KEY-1...`).
 
-*(Ensure the matching SSH public key is added to your GitHub account under Settings → SSH Keys).*
+*(Ensure the matching SSH public key is added to your GitHub account under **Settings → SSH and GPG keys**).*
 
 ---
 
@@ -80,7 +39,7 @@ curl https://mise.run | sh
 mise -E work bootstrap --from https://github.com/nikokultalahti/dotfiles.git --from-dir ~/Dev/dotfiles
 ```
 
-*(Alternatively, run via the included script: `bash <(curl -fsSL https://raw.githubusercontent.com/nikokultalahti/dotfiles/master/bootstrap.sh)`)*
+During the run, the Bitwarden CLI will prompt you to authenticate once. It will automatically extract your SSH key and `age` key into place, configure system files, deploy dotfiles, install tools, and flip the git remote to SSH.
 
 ---
 
@@ -106,9 +65,25 @@ systemctl reboot
 
 ---
 
+## Architecture & Core Philosophy
+
+1. **Zero-Sudo Initial Entry Point:** The setup begins entirely in user space over public HTTPS. Root privileges are never required upfront to clone or initialize the machine.
+2. **Immutable Host Boundary (Silverblue):** Keep host OS layering minimal. The immutable host is reserved strictly for the kernel, display server, GPU drivers, terminal emulator, multiplexer (`tmux`), and container runtimes (`podman`, `distrobox`).
+3. **GUI Applications via Flathub:** Desktop apps are installed exclusively from Flathub. Flathub builds bundle required codecs and runtimes, eliminating host package conflicts and dirty codec layering.
+4. **User-Space CLI Tooling:** Developer CLI binaries (`starship`, `atuin`, `eza`, `ripgrep`, `fzf`, `gh`, `age`, etc.) are installed directly into `~/.local/share/mise` via GitHub releases and Aqua registries rather than host package layers or Homebrew.
+5. **Zero-Knowledge Secret Recovery via Bitwarden:** During initial bootstrap, the Bitwarden Desktop Flatpak CLI interactively authenticates once to retrieve:
+   - Your private OpenSSH key into `~/.ssh/id_ed25519`
+   - Your `age` decryption key into `~/.config/age/dotfiles-age-key.txt`
+6. **Encrypted System Files in Public Git:** Sensitive system configs (such as `system/nextdns.age`) remain encrypted in git using `age`. Plaintext secrets never touch disk or git history unencrypted.
+7. **Automatic Remote Protocol Switch:** Boots anonymously via HTTPS, retrieves your SSH key from Bitwarden, and automatically flips the repository's git remote to `git@github.com:...` so future git operations are immediately ready for push.
+8. **Work vs. Personal Multi-Profile:** Sibling profile `mise.work.toml` dynamically customizes git identity, work email, and corporate repository credential helpers without hardcoding.
+9. **Zero-Maintenance Upgrades (Bluefin-Style):** A persistent daily systemd user timer automatically and silently updates all desktop Flatpaks, all global Mise CLI tools (`mise upgrade --yes`), and any Distrobox containers in the background, matching Bluefin's hands-free update model.
+
+---
+
 ## Phased Lifecycle Execution
 
-`mise bootstrap` executes configuration sections through a deterministic, phased order:
+`mise bootstrap` executes configuration sections through a deterministic order:
 
 ```
 [bootstrap.hooks.pre-packages]
@@ -119,7 +94,7 @@ systemctl reboot
        ↓
 [bootstrap.files] (/etc system configs placed)
        ↓
-[bootstrap.services] (System timers & user Podman socket started)
+[bootstrap.services] (System timers, auto-update timer & Podman socket started)
        ↓
 [dotfiles] (Configs linked, copied, and Tera templates rendered)
        ↓
@@ -148,6 +123,32 @@ systemctl reboot
 - **Tools (`[tools]`):** Installs developer CLI utilities (`age`, `starship`, `atuin`, `eza`, `fd`, `fzf`, `gh`, `jq`, `ripgrep`, `television`, `zoxide`, `goose`, `litra-rs`).
 - **Post-Tools Hook:** Uses `mise exec -- age` to stream-decrypt `system/nextdns.age` directly into `/etc/systemd/resolved.conf.d/nextdns.conf` with `sudo tee` and restarts `systemd-resolved`.
 - **Final Hook:** Rewrites the repository remote from HTTPS to `git@github.com:...` and, if bootstrapping on a work machine, runs `mise settings set env work` to persist the profile.
+
+---
+
+## Repository Structure
+
+```text
+dotfiles/
+├── mise.toml                  # Master machine configuration & bootstrap phases
+├── mise.work.toml             # Work environment overrides (email, machine type)
+├── bootstrap.sh               # One-liner bootstrap wrapper
+├── system/                    # Privileged /etc system files
+│   ├── nextdns.age            # Encrypted NextDNS systemd-resolved config
+│   ├── rpm-ostreed.conf       # Staged background OS updates configuration
+│   └── vscode.repo            # Official Microsoft repository for VS Code layering
+├── templates/                 # Dynamic dotfiles rendered via Tera template engine
+│   ├── gitconfig.tera         # Git config with conditional work/personal profiles
+│   ├── zshrc.tera             # Zsh configuration, tool inits, and completions
+│   └── zprofile.tera          # Environment & PATH setup
+├── .config/                   # Static application configs
+│   ├── atuin/config.toml      # Shell history sync settings
+│   ├── bat/                   # Bat syntax highlighter config & themes
+│   ├── tealdeer/config.toml   # Fast tldr client settings
+│   └── vscode/settings.tera   # VS Code settings (container sockets & themes)
+├── .bashrc                    # Static bash fallback config
+└── README.md
+```
 
 ---
 
