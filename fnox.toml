@@ -1,0 +1,10 @@
+# ==============================================================================
+# FNOX CONFIGURATION (Secret Manager)
+# Integrates with Bitwarden to expose secrets for mise bootstrap
+# ==============================================================================
+[providers.bitwarden]
+type = "bitwarden"
+
+[secrets]
+GITHUB_SSH_KEY   = { provider = "bitwarden", value = "dotfiles-github-auth-key/notes" }
+DOTFILES_AGE_KEY = { provider = "bitwarden", value = "dotfiles-age-key/notes" }

@@ -23,9 +23,28 @@ Before bootstrapping a fresh computer, ensure your Bitwarden vault contains two 
 
 ## How to Bootstrap a Fresh Machine
 
-### Step 1: Run the Bootstrap Command
+### Option A: The One-Liner Bootstrap Script (Recommended)
 
-On a clean installation, install `mise` and run the bootstrap:
+Run this single command in a terminal on a clean installation:
+
+```bash
+bash <(curl -fsSL https://raw.githubusercontent.com/nikokultalahti/mise-bootstrap/feat/modular-scripts/bootstrap.sh)
+```
+*(Or `./bootstrap.sh` if the repository is already cloned).*
+
+The script will:
+1. Install `mise` and put it on PATH.
+2. Install `bitwarden` CLI and `fnox`.
+3. Configure the EU Bitwarden vault (`https://vault.bitwarden.eu`) and prompt you to log in and unlock.
+4. Clone or navigate to the repository.
+5. Prompt you interactively to choose **1) Personal** (default) or **2) Work**.
+6. Run `fnox exec -- mise bootstrap` with the appropriate profile flags.
+
+---
+
+### Option B: Manual Command-Line Bootstrap
+
+If you prefer to run the commands step-by-step:
 
 #### Personal Machine (Linux):
 No `-E` flag is needed. `.miserc.toml` has `auto_env = true`, so `mise` automatically recognizes Linux and layers `mise.linux.toml` on top of `mise.toml` (which defaults to personal profile).
@@ -137,7 +156,9 @@ systemctl reboot
 
 ```text
 mise-bootstrap/
+├── bootstrap.sh               # One-liner bootstrap entrypoint script
 ├── .miserc.toml               # Early-init config (auto_env = true for OS detection)
+├── fnox.toml                  # Secret manager configuration (Bitwarden provider)
 ├── mise.toml                  # Base layer: universal CLI tools, baseline dotfiles, personal defaults
 ├── mise.linux.toml            # Linux platform layer: Flatpaks, /etc system files, systemd timers
 ├── mise.macos.toml            # macOS platform layer: Homebrew packages, macOS tools
