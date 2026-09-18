@@ -28,18 +28,25 @@ Before bootstrapping a fresh computer, ensure your Bitwarden vault contains two 
 On a clean installation, install `mise` and run the bootstrap:
 
 #### Personal Machine (Linux):
+No `-E` flag is needed. `.miserc.toml` has `auto_env = true`, so `mise` automatically recognizes Linux and layers `mise.linux.toml` on top of `mise.toml` (which defaults to personal profile).
 ```bash
 curl https://mise.run | sh
 mise bootstrap --from https://github.com/nikokultalahti/mise-bootstrap.git --from-dir ~/Dev/mise-bootstrap --force-dotfiles
 ```
+- **Files loaded:** `mise.toml` (base) + `mise.linux.toml` (platform & personal)
+- **What gets installed:** Common CLI tools, personal CLI tools (`yt-dlp`, `goose`, `fabric`, `talos`), 47 Flathub apps, Fedora system files (`/etc`), systemd timers, and personal dotfiles.
 
 #### Work Machine (macOS):
+The `-E work` flag specifies the work role profile. `.miserc.toml` automatically recognizes macOS and loads `mise.macos.toml`, while `-E work` loads `mise.work.toml` to override identity variables and install work packages and tools.
 ```bash
 curl https://mise.run | sh
 mise -E work bootstrap --from https://github.com/nikokultalahti/mise-bootstrap.git --from-dir ~/Dev/mise-bootstrap --force-dotfiles
 ```
+- **Files loaded:** `mise.toml` (base) + `mise.macos.toml` (platform) + `mise.work.toml` (work profile)
+- **What gets installed:** Common CLI tools, macOS Homebrew packages (`zsh-autosuggestions`, `zsh-syntax-highlighting`), work Homebrew casks & formulae (19 casks including `aerospace`, `raycast`, `gcloud-cli`, `ghostty`, `hermes-desktop`, `visual-studio-code`, plus `podman`, `hermes-agent`), work developer tools (`kubectl`, `k9s`, `terragrunt`, `opentofu`, `claude-code`, etc.), and work-tailored dotfiles (work email, Google Cloud SDK shell integrations, Bitbucket SSH rewrite).
+- **Automatic Persistence:** The final bootstrap hook (`scripts/final.sh`) automatically runs `mise settings set env work`, writing `env = "work"` to `~/.config/mise/config.local.toml`. On all subsequent runs (`mise bootstrap`, `mise install`, `mise upgrade`), your work Mac stays in the `work` environment without needing `-E work` again!
 
-During the run, the Bitwarden CLI will prompt you to authenticate once. It will automatically extract your SSH key and `age` key into place, configure system files, deploy dotfiles, install tools, and flip the git remote to SSH.
+During either run, the Bitwarden CLI will prompt you to authenticate once. It will automatically extract your SSH key and `age` key into place, configure system files, deploy dotfiles, install tools, and flip the git remote to SSH.
 
 ---
 
@@ -76,8 +83,8 @@ systemctl reboot
    - Your `age` decryption key into `~/.config/age/dotfiles-age-key.txt`
 6. **Encrypted System Files in Public Git:** Sensitive system configs (such as `system_files/nextdns.age`) remain encrypted in git using `age`. Plaintext secrets never touch disk or git history unencrypted.
 7. **Automatic Remote Protocol Switch:** Boots anonymously via HTTPS, retrieves your SSH key from Bitwarden, and automatically flips the repository's git remote to `git@github.com:...` so future git operations are immediately ready for push.
-8. **Work vs. Personal Multi-Profile:** Sibling profile `mise.work.toml` dynamically customizes git identity, work email, and corporate repository credential helpers without hardcoding.
-9. **Zero-Maintenance Upgrades:** A persistent daily systemd user timer automatically and silently updates all desktop Flatpaks, all global Mise CLI tools (`mise upgrade --yes`), and any Distrobox containers in the background.
+8. **Layered Platform & Role Profiles:** Automatic OS detection (`auto_env = true` in `.miserc.toml`) dynamically separates universal tools (`mise.toml`), Linux Flatpaks & system configs (`mise.linux.toml`), macOS Homebrew packages (`mise.macos.toml`), and work profile overrides (`mise.work.toml`).
+9. **Zero-Maintenance Upgrades:** A persistent daily systemd user timer on Linux automatically updates all desktop Flatpaks, Mise CLI tools (`mise upgrade --yes`), and Distrobox containers in the background.
 
 ---
 
@@ -120,7 +127,7 @@ systemctl reboot
   - Copies static configs (`atuin`, `bat`, `tealdeer`, `.bashrc`).
   - Renders dynamic Tera templates into `$HOME` (`.zshrc`, `.zprofile`, `.gitconfig`, `vscode/settings.json`).
 - **Linux Systemd User Units (`[bootstrap.linux.systemd.units]`):** Deploys and enables `workstation-auto-update.timer` to automatically update Flatpaks, Mise tools, and Distrobox containers daily.
-- **Tools (`[tools]`):** Installs developer CLI utilities (`age`, `starship`, `atuin`, `eza`, `fd`, `fzf`, `gh`, `jq`, `ripgrep`, `television`, `zoxide`, `goose`, `litra-rs`).
+- **Tools (`[tools]`):** Installs developer CLI utilities (universal: `age`, `starship`, `atuin`, `eza`, `fd`, `fzf`, `gh`, `helix`, `jq`, `ripgrep`, `sops`, `television`, `zoxide`, `litra-rs`; personal: `yt-dlp`, `goose`, `fabric`, `talos`; work: `kubectl`, `k9s`, `terragrunt`, `opentofu`, `claude-code`, etc.).
 - **Post-Tools Hook (`scripts/post-tools.sh`):** Uses `mise exec -- age` to stream-decrypt encrypted configuration secrets (`~/.ssh/config`, `nextdns.conf`).
 - **Final Hook (`scripts/final.sh`):** Rewrites the repository remote from HTTPS to `git@github.com:...` and, if bootstrapping on a work machine, runs `mise settings set env work` to persist the profile.
 
