@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Reconnect stdin to controlling terminal if piped via: curl ... | bash
-if [ ! -t 0 ] && [ -e /dev/tty ]; then
-    exec < /dev/tty
-fi
-
 echo "=================================================================="
 echo "🚀 Workstation Bootstrap (Mise + Bitwarden + Fnox)"
 echo "=================================================================="
@@ -75,7 +70,7 @@ cd "$TARGET_DIR"
 # ------------------------------------------------------------------------------
 echo ""
 echo "Select the configuration profile for this machine:"
-echo "  1) Personal (Fedora Silverblue Linux / macOS) [Default]"
+echo "  1) Personal (Linux) [Default]"
 echo "  2) Work (macOS)"
 read -r -p "Enter choice [1/2, default: 1]: " CHOICE
 CHOICE="${CHOICE:-1}"
