@@ -1,6 +1,8 @@
 # ==============================================================================
-# MISE MASTER CONFIGURATION
-# Manages: Tools, Packages (Flathub/Brew), Dotfiles, Systemd, etc.
+# MISE MASTER CONFIGURATION (Base Layer)
+# Shared across all platforms (Linux/macOS) and roles (Personal/Work).
+# Platform layers (mise.linux.toml, mise.macos.toml) load automatically via auto_env.
+# Role overrides (mise.work.toml) activate via: mise -E work bootstrap
 # ==============================================================================
 
 [settings]
@@ -9,140 +11,43 @@ auto_update = true
 age.key_file = "$HOME/.config/age/dotfiles-age-key.txt"
 
 # ==============================================================================
-# VARIABLES
-# Referenced in .tera templates as {{ vars.name }}, {{ vars.email }}, etc.
+# DEFAULT VARIABLES (Personal Profile)
+# Overridden in mise.work.toml when -E work is passed
 # ==============================================================================
 [vars]
 name = "Niko Kultalahti"
 email = "hello@nikokultalahti.com"
 machine_type = "personal"
 
-# ==============================================================================
-# HOOK: PRE-PACKAGES
-# Runs immediately BEFORE bootstrap.packages.
-# Configures Flathub, migrates any Fedora Flatpaks, and disables Fedora remote.
-# ==============================================================================
-[bootstrap.hooks.pre-packages]
-run = "\"{{config_root}}/scripts/pre-packages.sh\""
-
-# ==============================================================================
-# SYSTEM PACKAGES (mise bootstrap packages apply)
-# Guaranteed to install exclusively from Flathub
-# ==============================================================================
-[bootstrap.packages]
-# --- Linux Flatpaks (Flathub) ---
-"flatpak:org.gtk.Gtk3theme.adw-gtk3" = "latest"
-"flatpak:org.gtk.Gtk3theme.adw-gtk3-dark" = "latest"
-"flatpak:org.gnome.Firmware" = "latest"
-"flatpak:com.github.tchx84.Flatseal" = "latest"
-"flatpak:io.github.flattool.Warehouse" = "latest"
-"flatpak:com.mattjakeman.ExtensionManager" = "latest"
-"flatpak:io.github.flattool.Ignition" = "latest"
-"flatpak:io.gitlab.adhami3310.Impression" = "latest"
-"flatpak:org.gnome.World.PikaBackup" = "latest"
-"flatpak:page.tesk.Refine" = "latest"
-"flatpak:io.github.getnf.embellish" = "latest"
-"flatpak:com.bitwarden.desktop" = "latest"
-"flatpak:com.github.marhkb.Pods" = "latest"
-"flatpak:org.gnome.Boxes" = "latest"
-"flatpak:com.ranfdev.DistroShelf" = "latest"
-"flatpak:org.mozilla.firefox" = "latest"
-"flatpak:org.mozilla.thunderbird_esr" = "latest"
-"flatpak:org.libreoffice.LibreOffice" = "latest"
-"flatpak:dev.qwery.AddWater" = "latest"
-"flatpak:io.github.qwersyk.Newelle" = "latest"
-"flatpak:app.drey.Dialect" = "latest"
-"flatpak:be.alexandervanhee.gradia" = "latest"
-"flatpak:cafe.avery.Delfin" = "latest"
-"flatpak:com.github.PintaProject.Pinta" = "latest"
-"flatpak:com.github.jeromerobert.pdfarranger" = "latest"
-"flatpak:com.nextcloud.desktopclient.nextcloud" = "latest"
-"flatpak:com.yubico.yubioath" = "latest"
-"flatpak:de.haeckerfelix.Fragments" = "latest"
-"flatpak:de.schmidhuberj.tubefeeder" = "latest" # Pipeline
-"flatpak:org.nickvision.tubeconverter" = "latest" # Parabolic
-"flatpak:dev.geopjr.Tuba" = "latest"
-"flatpak:io.github.alainm23.planify" = "latest"
-"flatpak:md.obsidian.Obsidian" = "latest"
-"flatpak:org.gnome.World.Iotas" = "latest"
-"flatpak:org.gnome.gitlab.cheywood.Pulp" = "latest"
-"flatpak:org.gnome.gitlab.somas.Apostrophe" = "latest"
-"flatpak:org.signal.Signal" = "latest"
-"flatpak:re.sonny.Eloquent" = "latest"
-"flatpak:app.fotema.Fotema" = "latest"
-"flatpak:com.github.maoschanz.drawing" = "latest"
-"flatpak:io.gitlab.adhami3310.Converter" = "latest"
-"flatpak:page.codeberg.censor.Censor" = "latest"
-
-# --- Dev Tools ---
-"flatpak:dev.zed.Zed" = "latest"
-"flatpak:re.sonny.Commit" = "latest" 
-"flatpak:me.iepure.devtoolbox" = "latest"
-"flatpak:com.mardojai.ForgeSparks" = "latest"
-"flatpak:de.wwwtech.gitte" = "latest"
-
 # ============================================================================================
 # HOOK: POST-PACKAGES
 # Runs immediately AFTER bootstrap.packages.
-# 1. Configures GNOME Software for automatic background Flatpak updates.
-# 2. Uses the newly installed Bitwarden Flatpak CLI to log in and fetch the AGE and SSH keys.
+# Uses Bitwarden CLI (Flatpak on Linux, native on macOS) to fetch AGE and SSH keys.
 # ============================================================================================
 [bootstrap.hooks.post-packages]
 run = "\"{{config_root}}/scripts/post-packages.sh\""
 
 # ==============================================================================
-# SYSTEM FILES (mise bootstrap files apply)
-# ==============================================================================
-# Replaces /etc/rpm-ostreed.conf for automatic staged updates
-[bootstrap.files."/etc/rpm-ostreed.conf"]
-source = "system_files/rpm-ostreed.conf"
-owner = "root"
-mode = "0644"
-notify = ["rpm-ostreed-automatic.timer"]
-
-# Sets up repository for VSCode to be layered
-[bootstrap.files."/etc/yum.repos.d/vscode.repo"]
-source = "system_files/vscode.repo"
-owner = "root"
-mode = "0644"
-
-# Ensure the directory exists for NextDNS config
-[bootstrap.directories."/etc/systemd/resolved.conf.d"]
-owner = "root"
-mode = "0755"
-
-# ==============================================================================
-# SYSTEM SERVICES (mise bootstrap services apply)
-# Converges systemd units (both system-level timers and user sockets)
-# ==============================================================================
-[bootstrap.services."rpm-ostreed-automatic.timer"]
-# Enables and starts the staged OS update timer on Silverblue
-state = "running"
-enabled = true
-
-[bootstrap.services."podman.socket"]
-# Enables and starts the rootless Podman user socket for Dev Containers
-state = "running"
-enabled = true
-
-# ==============================================================================
 # DOTFILES & TEMPLATES (mise bootstrap dotfiles apply)
 # ==============================================================================
 [dotfiles]
-# --- Self-managing Mise config ---
-"~/.config/mise/config.toml" = { source = "mise.toml", mode = "symlink" }
-"~/.config/mise/config.work.toml" = {source = "mise.work.toml", mode = "symlink" }
+# --- Self-managing Mise configs ---
+"~/.config/mise/config.toml"       = { source = "mise.toml", mode = "symlink" }
+"~/.config/mise/config.linux.toml" = { source = "mise.linux.toml", mode = "symlink" }
+"~/.config/mise/config.macos.toml" = { source = "mise.macos.toml", mode = "symlink" }
+"~/.config/mise/config.work.toml"  = { source = "mise.work.toml", mode = "symlink" }
+"~/.config/mise/miserc.toml"       = { source = ".miserc.toml", mode = "symlink" }
 
 # --- Static Configuration Files ---
-"~/.config/atuin/config.toml"           = { source = "dotfiles/.config/atuin/config.toml", mode = "copy" }
-"~/.config/bat"                         = { source = "dotfiles/.config/bat", mode = "copy" }
-"~/.config/tealdeer/config.toml"        = { source = "dotfiles/.config/tealdeer/config.toml", mode = "copy" }
-"~/.bashrc"                             = { source = "dotfiles/.bashrc", mode = "copy" }
+"~/.config/atuin/config.toml"      = { source = "dotfiles/.config/atuin/config.toml", mode = "copy" }
+"~/.config/bat"                    = { source = "dotfiles/.config/bat", mode = "copy" }
+"~/.config/tealdeer/config.toml"   = { source = "dotfiles/.config/tealdeer/config.toml", mode = "copy" }
+"~/.bashrc"                        = { source = "dotfiles/.bashrc", mode = "copy" }
 
 # --- Dynamic Templates ---
-"~/.zshrc"                              = { source = "dotfiles/zshrc.tera", mode = "template" }
-"~/.zprofile"                           = { source = "dotfiles/zprofile.tera", mode = "template" }
-"~/.gitconfig"                          = { source = "dotfiles/gitconfig.tera", mode = "template" }
+"~/.zshrc"                         = { source = "dotfiles/zshrc.tera", mode = "template" }
+"~/.zprofile"                      = { source = "dotfiles/zprofile.tera", mode = "template" }
+"~/.gitconfig"                     = { source = "dotfiles/gitconfig.tera", mode = "template" }
 
 [dotfiles."vscode/settings.json"]
 source = "dotfiles/.config/vscode/settings.tera"
@@ -153,25 +58,7 @@ variants = [
 ]
 
 # ==============================================================================
-# LINUX SYSTEMD UNITS FOR AUTOMATIC UPDATES (Flatpaks, Mise Tools & Distrobox)
-# Creates systemd units for zero-maintenance background updates
-# ==============================================================================
-[bootstrap.linux.systemd.units.workstation-auto-update]
-description = "Automatic background update for Flatpaks, Mise tools, and Distrobox containers"
-type = "oneshot"
-exec_start = "/usr/bin/bash -c 'flatpak update -y --noninteractive && %h/.local/bin/mise upgrade --yes && (command -v distrobox-upgrade &>/dev/null && distrobox-upgrade --all || true)'"
-start = false
-wanted_by = []
-
-[bootstrap.linux.systemd.units.workstation-auto-update-timer]
-description = "Daily background update timer for Flatpaks, Mise tools, and Distrobox containers"
-on_calendar = "daily"
-randomized_delay_sec = "30m"
-persistent = true
-unit = "workstation-auto-update"
-
-# ==============================================================================
-# TOOLS (mise install)
+# UNIVERSAL TOOLS (mise install)
 # ==============================================================================
 [tools]
 age = "latest"            # Required for decrypting files
@@ -192,8 +79,6 @@ television = "latest"
 yq = "latest"
 yt-dlp = "latest"
 zoxide = "latest"
-"github:timrogers/litra-rs" = "latest"
-"github:timrogers/litra-autotoggle" = "latest"
 "github:aaif-goose/goose" = "latest"
 
 # ==============================================================================

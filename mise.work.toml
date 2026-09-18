@@ -1,3 +1,13 @@
+# ==============================================================================
+# MISE WORK PROFILE OVERRIDES
+# Activated via: mise -E work bootstrap
+# ==============================================================================
 [vars]
 email = "niko.kultalahti@gapspgroup.com"
 machine_type = "work"
+
+# ==============================================================================
+# WORK PACKAGES (mise bootstrap packages apply)
+# ==============================================================================
+[bootstrap.packages]
+"brew:google-cloud-sdk" = "latest"

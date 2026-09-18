@@ -1,0 +1,121 @@
+# ==============================================================================
+# MISE LINUX PLATFORM CONFIGURATION (Fedora Silverblue)
+# Loaded automatically on Linux via auto_env
+# ==============================================================================
+
+# ==============================================================================
+# HOOK: PRE-PACKAGES
+# Runs immediately BEFORE bootstrap.packages.
+# Configures Flathub, migrates any Fedora Flatpaks, and disables Fedora remote.
+# ==============================================================================
+[bootstrap.hooks.pre-packages]
+run = "\"{{config_root}}/scripts/pre-packages.sh\""
+
+# ==============================================================================
+# SYSTEM PACKAGES (mise bootstrap packages apply)
+# Guaranteed to install exclusively from Flathub
+# ==============================================================================
+[bootstrap.packages]
+# --- Linux Flatpaks (Flathub) ---
+"flatpak:org.gtk.Gtk3theme.adw-gtk3" = "latest"
+"flatpak:org.gtk.Gtk3theme.adw-gtk3-dark" = "latest"
+"flatpak:org.gnome.Firmware" = "latest"
+"flatpak:com.github.tchx84.Flatseal" = "latest"
+"flatpak:io.github.flattool.Warehouse" = "latest"
+"flatpak:com.mattjakeman.ExtensionManager" = "latest"
+"flatpak:io.github.flattool.Ignition" = "latest"
+"flatpak:io.gitlab.adhami3310.Impression" = "latest"
+"flatpak:org.gnome.World.PikaBackup" = "latest"
+"flatpak:page.tesk.Refine" = "latest"
+"flatpak:io.github.getnf.embellish" = "latest"
+"flatpak:com.bitwarden.desktop" = "latest"
+"flatpak:com.github.marhkb.Pods" = "latest"
+"flatpak:org.gnome.Boxes" = "latest"
+"flatpak:com.ranfdev.DistroShelf" = "latest"
+"flatpak:org.mozilla.firefox" = "latest"
+"flatpak:org.mozilla.thunderbird_esr" = "latest"
+"flatpak:org.libreoffice.LibreOffice" = "latest"
+"flatpak:dev.qwery.AddWater" = "latest"
+"flatpak:io.github.qwersyk.Newelle" = "latest"
+"flatpak:app.drey.Dialect" = "latest"
+"flatpak:be.alexandervanhee.gradia" = "latest"
+"flatpak:cafe.avery.Delfin" = "latest"
+"flatpak:com.github.PintaProject.Pinta" = "latest"
+"flatpak:com.github.jeromerobert.pdfarranger" = "latest"
+"flatpak:com.nextcloud.desktopclient.nextcloud" = "latest"
+"flatpak:com.yubico.yubioath" = "latest"
+"flatpak:de.haeckerfelix.Fragments" = "latest"
+"flatpak:de.schmidhuberj.tubefeeder" = "latest" # Pipeline
+"flatpak:org.nickvision.tubeconverter" = "latest" # Parabolic
+"flatpak:dev.geopjr.Tuba" = "latest"
+"flatpak:io.github.alainm23.planify" = "latest"
+"flatpak:md.obsidian.Obsidian" = "latest"
+"flatpak:org.gnome.World.Iotas" = "latest"
+"flatpak:org.gnome.gitlab.cheywood.Pulp" = "latest"
+"flatpak:org.gnome.gitlab.somas.Apostrophe" = "latest"
+"flatpak:org.signal.Signal" = "latest"
+"flatpak:re.sonny.Eloquent" = "latest"
+"flatpak:app.fotema.Fotema" = "latest"
+"flatpak:com.github.maoschanz.drawing" = "latest"
+"flatpak:io.gitlab.adhami3310.Converter" = "latest"
+"flatpak:page.codeberg.censor.Censor" = "latest"
+
+# --- Dev Tools ---
+"flatpak:dev.zed.Zed" = "latest"
+"flatpak:re.sonny.Commit" = "latest" 
+"flatpak:me.iepure.devtoolbox" = "latest"
+"flatpak:com.mardojai.ForgeSparks" = "latest"
+"flatpak:de.wwwtech.gitte" = "latest"
+
+# ==============================================================================
+# SYSTEM FILES (mise bootstrap files apply)
+# ==============================================================================
+# Replaces /etc/rpm-ostreed.conf for automatic staged updates
+[bootstrap.files."/etc/rpm-ostreed.conf"]
+source = "system_files/rpm-ostreed.conf"
+owner = "root"
+mode = "0644"
+notify = ["rpm-ostreed-automatic.timer"]
+
+# Sets up repository for VSCode to be layered
+[bootstrap.files."/etc/yum.repos.d/vscode.repo"]
+source = "system_files/vscode.repo"
+owner = "root"
+mode = "0644"
+
+# Ensure the directory exists for NextDNS config
+[bootstrap.directories."/etc/systemd/resolved.conf.d"]
+owner = "root"
+mode = "0755"
+
+# ==============================================================================
+# SYSTEM SERVICES (mise bootstrap services apply)
+# Converges systemd units (both system-level timers and user sockets)
+# ==============================================================================
+[bootstrap.services."rpm-ostreed-automatic.timer"]
+# Enables and starts the staged OS update timer on Silverblue
+state = "running"
+enabled = true
+
+[bootstrap.services."podman.socket"]
+# Enables and starts the rootless Podman user socket for Dev Containers
+state = "running"
+enabled = true
+
+# ==============================================================================
+# LINUX SYSTEMD UNITS FOR AUTOMATIC UPDATES (Flatpaks, Mise Tools & Distrobox)
+# Creates systemd units for zero-maintenance background updates
+# ==============================================================================
+[bootstrap.linux.systemd.units.workstation-auto-update]
+description = "Automatic background update for Flatpaks, Mise tools, and Distrobox containers"
+type = "oneshot"
+exec_start = "/usr/bin/bash -c 'flatpak update -y --noninteractive && %h/.local/bin/mise upgrade --yes && (command -v distrobox-upgrade &>/dev/null && distrobox-upgrade --all || true)'"
+start = false
+wanted_by = []
+
+[bootstrap.linux.systemd.units.workstation-auto-update-timer]
+description = "Daily background update timer for Flatpaks, Mise tools, and Distrobox containers"
+on_calendar = "daily"
+randomized_delay_sec = "30m"
+persistent = true
+unit = "workstation-auto-update"

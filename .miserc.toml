@@ -1,0 +1,5 @@
+# ==============================================================================
+# MISE EARLY-INIT CONFIGURATION
+# Enables automatic OS-based environments (mise.linux.toml, mise.macos.toml)
+# ==============================================================================
+auto_env = true

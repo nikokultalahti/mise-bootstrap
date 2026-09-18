@@ -27,13 +27,13 @@ Before bootstrapping a fresh computer, ensure your Bitwarden vault contains two 
 
 On a clean installation, install `mise` and run the bootstrap:
 
-#### Personal Machine:
+#### Personal Machine (Linux):
 ```bash
 curl https://mise.run | sh
 mise bootstrap --from https://github.com/nikokultalahti/mise-bootstrap.git --from-dir ~/Dev/mise-bootstrap --force-dotfiles
 ```
 
-#### Work Machine:
+#### Work Machine (macOS):
 ```bash
 curl https://mise.run | sh
 mise -E work bootstrap --from https://github.com/nikokultalahti/mise-bootstrap.git --from-dir ~/Dev/mise-bootstrap --force-dotfiles
@@ -130,18 +130,21 @@ systemctl reboot
 
 ```text
 mise-bootstrap/
-├── mise.toml                  # Master machine configuration & bootstrap phases
-├── mise.work.toml             # Work environment overrides (email, machine type)
+├── .miserc.toml               # Early-init config (auto_env = true for OS detection)
+├── mise.toml                  # Base layer: universal CLI tools, baseline dotfiles, personal defaults
+├── mise.linux.toml            # Linux platform layer: Flatpaks, /etc system files, systemd timers
+├── mise.macos.toml            # macOS platform layer: Homebrew packages, macOS tools
+├── mise.work.toml             # Work profile layer: work email, gcloud, work settings
 ├── scripts/                   # Modular bootstrap phase scripts
-│   ├── pre-packages.sh        # Configures and prioritizes Flathub
+│   ├── pre-packages.sh        # Configures and prioritizes Flathub (Linux)
 │   ├── post-packages.sh       # Fetches Bitwarden secrets & enables auto-updates
 │   ├── post-tools.sh          # Decrypts age secrets (SSH & NextDNS)
 │   └── final.sh               # Switches git origin to SSH & persists profile
-├── system_files/              # Privileged /etc system files
+├── system_files/              # Privileged /etc system files (Linux)
 │   ├── nextdns.age            # Encrypted NextDNS systemd-resolved config
 │   ├── rpm-ostreed.conf       # Staged background OS updates configuration
 │   └── vscode.repo            # Official Microsoft repository for VS Code layering
-├── dotfiles/                  # Dotfiles and templates
+├── dotfiles/                  # Dotfiles and dynamic templates (cross-platform source of truth)
 │   ├── .bashrc                # Static bash fallback config
 │   ├── .config/               # Static application configs
 │   │   ├── atuin/config.toml  # Shell history sync settings
