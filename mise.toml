@@ -23,23 +23,7 @@ machine_type = "personal"
 # Configures Flathub, migrates any Fedora Flatpaks, and disables Fedora remote.
 # ==============================================================================
 [bootstrap.hooks.pre-packages]
-run = """
-#!/usr/bin/env bash
-set -e
-
-if [[ "$(uname -s)" == "Linux" ]] && command -v flatpak &>/dev/null; then
-    echo "[-] Ensuring Flathub is added and prioritized [-]"
-    
-    # 1. Add full Flathub remote if missing
-    flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
-
-    # 2. Set Flathub priority high (10) so all app searches and instlls default to Flathub
-    flatpak remote-modify --prio=10 flathub
-    flatpak remote-modify --prio=1 fedora 2>/dev/null || true
-
-    echo "[✓] Flathub is now the primary Flatpak repository"
-fi
-"""
+run = "\"{{config_root}}/scripts/pre-packages.sh\""
 
 # ==============================================================================
 # SYSTEM PACKAGES (mise bootstrap packages apply)
@@ -104,64 +88,7 @@ fi
 # 2. Uses the newly installed Bitwarden Flatpak CLI to log in and fetch the AGE and SSH keys.
 # ============================================================================================
 [bootstrap.hooks.post-packages]
-run = """
-#!/usr/bin/env bash
-set -e
-
-# Set bw command to variable depending on whether running via Flatpak (Linux) or normal bw cli (MacOS)
-if [[ "$(uname -s)" == "Linux" ]]; then
-    BW_COMMAND="flatpak run --command=bw com.bitwarden.desktop"
-fi
-
-if [[ "$(uname -s)" == "Darwin" ]]; then
-    BW_COMMAND="bw"
-fi
-
-
-if [[ "$(uname -s)" == "Linux" ]]; then
-    # Enable GNOME Software background updates
-    if command -v gsettings &>/dev/null; then
-        gsettings set org.gnome.software download-updates true
-        gsettings set org.gnome.software download-updates-notify true
-        echo "[✓] Automatic GNOME Software updates turnead on"
-    fi
-fi
-
-if [[ ! -f "$HOME/.config/age/dotfiles-age-key.txt" || ! -f "$HOME/.ssh/id_ed25519" ]]; then
-    echo "[-] Checking Bitwarden authentication to fetch secrets [-]"
-    
-    # 1. Only configure server and login if NOT already authenticated
-    if ! $BW_COMMAND login --check >/dev/null 2>&1; then
-        $BW_COMMAND config server https://vault.bitwarden.eu
-        $BW_COMMAND login
-    else
-        echo "[✓] Bitwarden already configured and logged in"
-    fi
-
-    # 2. Unlock vault for this session
-    BW_SESSION=$($BW_COMMAND unlock --raw)
-
-    # 3. Pull Age secret key if missing
-    if [[ ! -f "$HOME/.config/age/dotfiles-age-key.txt" ]]; then
-        mkdir -p "$HOME/.config/age"
-        $BW_COMMAND get notes "dotfiles-age-key" --session "$BW_SESSION" > "$HOME/.config/age/dotfiles-age-key.txt"
-        chmod 600 "$HOME/.config/age/dotfiles-age-key.txt"
-        echo "[✓] Age secret key restored to ~/.config/age/dotfiles-age-key.txt"
-    fi
-
-    # 4. Pull GitHub SSH Key if missing
-    if [[ ! -f "$HOME/.ssh/id_ed25519" ]]; then
-        mkdir -p "$HOME/.ssh"
-        chmod 700 "$HOME/.ssh"
-        $BW_COMMAND get notes "dotfiles-github-auth-key" --session "$BW_SESSION" > "$HOME/.ssh/id_ed25519"
-        chmod 600 "$HOME/.ssh/id_ed25519"
-
-        touch "$HOME/.ssh/known_hosts"
-        ssh-keyscan -t ed25519 github.com >> "$HOME/.ssh/known_hosts" 2>/dev/null
-        echo "[✓] SSH key restored to ~/.ssh/id_ed25519"
-    fi
-fi
-"""
+run = "\"{{config_root}}/scripts/post-packages.sh\""
 
 # ==============================================================================
 # SYSTEM FILES (mise bootstrap files apply)
@@ -274,104 +201,10 @@ zoxide = "latest"
 # Decrypts secrets using age immediately after tools are installed
 # ==============================================================================
 [bootstrap.hooks.post-tools]
-run = """
-#!/usr/bin/env bash
-set -e
-
-AGE_KEY="$HOME/.config/age/dotfiles-age-key.txt"
-
-if [[ ! -f "$AGE_KEY" ]]; then
-    echo "[!] Warning: Age key not found at $AGE_KEY; skipping decryption."
-    exit 0
-fi
-
-# ------------------------------------------------------------------------------
-# 1. Decrypt User SSH Config (~/.ssh/config)
-# ------------------------------------------------------------------------------
-ENCRYPTED_SSH="$HOME/Dev/mise-bootstrap/dotfiles/.ssh/ssh_config_personal.age"
-if [[ ! -f "$ENCRYPTED_SSH" && -f "$PWD/dotfiles/.ssh/ssh_config_personal.age" ]]; then
-    ENCRYPTED_SSH="$PWD/dotfiles/.ssh/ssh_config_personal.age"
-fi
-
-DECRYPTED_SSH="$HOME/.ssh/config"
-
-if [[ -f "$ENCRYPTED_SSH" ]]; then
-    echo "[-] Decrypting ~/.ssh/config [-]"
-    mkdir -p "$HOME/.ssh"
-    chmod 700 "$HOME/.ssh"
-    mise exec -- age -d -i "$AGE_KEY" "$ENCRYPTED_SSH" > "$DECRYPTED_SSH"
-    chmod 600 "$DECRYPTED_SSH"
-    echo "[✓] ~/.ssh/config decrypted"
-fi
-
-# ------------------------------------------------------------------------------
-# 2. Decrypt System NextDNS Config (Linux only: /etc/systemd/resolved.conf.d/)
-# ------------------------------------------------------------------------------
-
-ENCRYPTED_DNS="$HOME/Dev/mise-bootstrap/system_files/nextdns.age"
-if [[ ! -f "$ENCRYPTED_DNS" && -f "$PWD/system_files/nextdns.age" ]]; then
-    ENCRYPTED_DNS="$PWD/system_files/nextdns.age"
-fi
-DECRYPTED_DNS="/etc/systemd/resolved.conf.d/nextdns.conf"
-
-
-if [[ "$(uname -s)" == "Linux" && -f "$ENCRYPTED_DNS" ]]; then
-
-    echo "[-] Configuring NextDNS in systemd-resolved [-]"
-
-    # Stream decrypt directly into destination (no plaintext ever touches /tmp)
-    mise exec -- age -d -i "$AGE_KEY" "$ENCRYPTED_DNS" | sudo tee "$DECRYPTED_DNS" > /dev/null
-    sudo chmod 644 "$DECRYPTED_DNS"
-
-    # Restart systemd-resolved to apply the new DNS immediately
-    sudo systemctl restart systemd-resolved
-    echo "[✓] NextDNS configured and systemd-resolved restarted"
-fi
-"""
+run = "\"{{config_root}}/scripts/post-tools.sh\""
 
 # ==============================================================================
 # FINAL HOOK (mise bootstrap final-hook)
 # ==============================================================================
 [bootstrap.hooks.final]
-run = """
-
-# ------------------------------------------------------------------------------
-# 1. Switch Git Origin from HTTPS to SSH
-# ------------------------------------------------------------------------------
-REPO_DIR="$HOME/Dev/mise-bootstrap"
-
-# Fallback to current working directory if ~/Dev/mise-bootstrap is not where it was cloned
-if [[ ! -d "$REPO_DIR/.git" && -d "$PWD/.git" ]]; then
-    REPO_DIR="$PWD"
-fi
-
-if [[ -d "$REPO_DIR/.git" ]]; then
-    CURRENT_ORIGIN=$(git -C "$REPO_DIR" remote get-url origin 2>/dev/null || true)
-    if [[ "$CURRENT_ORIGIN" == https://github.com/* ]]; then
-        echo "[-] Converting git origin from HTTPS to SSH in $REPO_DIR [-]"
-        
-        # Converts https://github.com/user/repo(.git) to git@github.com:user/repo.git
-        SSH_ORIGIN="git@github.com:${CURRENT_ORIGIN#https://github.com/}"
-        [[ "$SSH_ORIGIN" != *.git ]] && SSH_ORIGIN="${SSH_ORIGIN}.git"
-        
-        git -C "$REPO_DIR" remote set-url origin "$SSH_ORIGIN"
-        echo "[✓] Git origin updated to: $SSH_ORIGIN"
-    else
-        echo "[✓] Git origin is already using SSH or custom remote"
-    fi
-fi
-
-# ------------------------------------------------------------------------------
-# 2. Persist Work Profile if applicable
-# ------------------------------------------------------------------------------
-{% if vars.machine_type == "work" %}
-echo "[-] Persisting work environment settings [-]"
-mise settings set env work
-echo "[✓] Machine permanently configured with 'work' profile in config.local.toml"
-{% endif %}
-
-echo ""
-echo "=================================================================="
-echo "🎉 Bootstrap complete!" 
-echo "=================================================================="
-"""
+run = "\"{{config_root}}/scripts/final.sh\" {{ vars.machine_type }}"

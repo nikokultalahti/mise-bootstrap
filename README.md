@@ -107,9 +107,9 @@ systemctl reboot
 [bootstrap.hooks.final] (Flip Git origin to SSH & persist work profile)
 ```
 
-- **Pre-Packages Hook:** Ensures the official Flathub remote is prioritized (`--prio=10`) and deprioritizes Fedora's filtered Flatpak remote (`--prio=1`).
+- **Pre-Packages Hook (`scripts/pre-packages.sh`):** Ensures the official Flathub remote is prioritized (`--prio=10`) and deprioritizes Fedora's filtered Flatpak remote (`--prio=1`).
 - **System Packages (`[bootstrap.packages]`):** Installs desktop Flatpaks (Bitwarden, Commit, Firefox, Thunderbird, Obsidian, Signal, Pods, Flatseal, etc.).
-- **Post-Packages Hook:** 
+- **Post-Packages Hook (`scripts/post-packages.sh`):** 
   - Enables GNOME Software automatic background updates.
   - Launches the Bitwarden CLI, prompts for authentication, and extracts `~/.ssh/id_ed25519` and your `age` key.
   - Pre-seeds `github.com` into `~/.ssh/known_hosts`.
@@ -121,8 +121,8 @@ systemctl reboot
   - Renders dynamic Tera templates into `$HOME` (`.zshrc`, `.zprofile`, `.gitconfig`, `vscode/settings.json`).
 - **Linux Systemd User Units (`[bootstrap.linux.systemd.units]`):** Deploys and enables `workstation-auto-update.timer` to automatically update Flatpaks, Mise tools, and Distrobox containers daily.
 - **Tools (`[tools]`):** Installs developer CLI utilities (`age`, `starship`, `atuin`, `eza`, `fd`, `fzf`, `gh`, `jq`, `ripgrep`, `television`, `zoxide`, `goose`, `litra-rs`).
-- **Post-Tools Hook:** Uses `mise exec -- age` to stream-decrypt encrypted configuration secrets (`~/.ssh/config`, `nextdns.conf`).
-- **Final Hook:** Rewrites the repository remote from HTTPS to `git@github.com:...` and, if bootstrapping on a work machine, runs `mise settings set env work` to persist the profile.
+- **Post-Tools Hook (`scripts/post-tools.sh`):** Uses `mise exec -- age` to stream-decrypt encrypted configuration secrets (`~/.ssh/config`, `nextdns.conf`).
+- **Final Hook (`scripts/final.sh`):** Rewrites the repository remote from HTTPS to `git@github.com:...` and, if bootstrapping on a work machine, runs `mise settings set env work` to persist the profile.
 
 ---
 
@@ -132,6 +132,11 @@ systemctl reboot
 mise-bootstrap/
 ├── mise.toml                  # Master machine configuration & bootstrap phases
 ├── mise.work.toml             # Work environment overrides (email, machine type)
+├── scripts/                   # Modular bootstrap phase scripts
+│   ├── pre-packages.sh        # Configures and prioritizes Flathub
+│   ├── post-packages.sh       # Fetches Bitwarden secrets & enables auto-updates
+│   ├── post-tools.sh          # Decrypts age secrets (SSH & NextDNS)
+│   └── final.sh               # Switches git origin to SSH & persists profile
 ├── system_files/              # Privileged /etc system files
 │   ├── nextdns.age            # Encrypted NextDNS systemd-resolved config
 │   ├── rpm-ostreed.conf       # Staged background OS updates configuration
@@ -155,7 +160,7 @@ mise-bootstrap/
 
 ## Day-to-Day Workflow
 
-Your bootsrap and dotfiles repository lives at `~/Dev/mise-bootstrap` as a standard, independent Git repository.
+Your bootstrap and dotfiles repository lives at `~/Dev/mise-bootstrap` as a standard, independent Git repository.
 
 ### Making Changes
 1. Navigate to the repository:
