@@ -1,5 +1,5 @@
 # ==============================================================================
-# MISE LINUX PLATFORM CONFIGURATION (Fedora Silverblue)
+# MISE LINUX PLATFORM & PERSONAL CONFIGURATION (Fedora Silverblue)
 # Loaded automatically on Linux via auto_env
 # ==============================================================================
 
@@ -66,6 +66,15 @@ run = "\"{{config_root}}/scripts/pre-packages.sh\""
 "flatpak:me.iepure.devtoolbox" = "latest"
 "flatpak:com.mardojai.ForgeSparks" = "latest"
 "flatpak:de.wwwtech.gitte" = "latest"
+
+# ==============================================================================
+# PERSONAL CLI TOOLS (Linux)
+# ==============================================================================
+[tools]
+yt-dlp = "latest"
+"github:aaif-goose/goose" = "latest"
+"github:danielmiessler/fabric" = "latest"
+"aqua:siderolabs/talos" = "latest"
 
 # ==============================================================================
 # SYSTEM FILES (mise bootstrap files apply)

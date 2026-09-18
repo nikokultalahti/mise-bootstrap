@@ -10,10 +10,3 @@
 [bootstrap.packages]
 "brew:zsh-autosuggestions" = "latest"
 "brew:zsh-syntax-highlighting" = "latest"
-
-# ==============================================================================
-# MACOS SPECIFIC TOOLS
-# ==============================================================================
-[tools]
-"github:timrogers/litra-rs" = "latest"
-"github:timrogers/litra-autotoggle" = "latest"

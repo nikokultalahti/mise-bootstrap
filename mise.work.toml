@@ -7,7 +7,55 @@ email = "niko.kultalahti@gapspgroup.com"
 machine_type = "work"
 
 # ==============================================================================
-# WORK PACKAGES (mise bootstrap packages apply)
+# WORK SYSTEM PACKAGES (mise bootstrap packages apply)
+# Installed via Homebrew formulae and casks on macOS
 # ==============================================================================
 [bootstrap.packages]
-"brew:google-cloud-sdk" = "latest"
+# --- Homebrew Formulae ---
+"brew:hermes-agent" = "latest"
+"brew:podman" = "latest"
+"brew:podman-compose" = "latest"
+
+# --- Homebrew Casks ---
+"brew-cask:nikitabobko/tap/aerospace" = "latest"
+"brew-cask:antigravity" = "latest"
+"brew-cask:bitwarden" = "latest"
+"brew-cask:claude-code" = "latest"
+"brew-cask:firefox" = "latest"
+"brew-cask:gcloud-cli" = "latest"
+"brew-cask:ghostty" = "latest"
+"brew-cask:google-chrome" = "latest"
+"brew-cask:hermes-desktop" = "latest"
+"brew-cask:obsidian" = "latest"
+"brew-cask:podman-desktop" = "latest"
+"brew-cask:raycast" = "latest"
+"brew-cask:shortcat" = "latest"
+"brew-cask:slack" = "latest"
+"brew-cask:spotify" = "latest"
+"brew-cask:visual-studio-code" = "latest"
+"brew-cask:yubico-authenticator" = "latest"
+"brew-cask:zed" = "latest"
+"brew-cask:font-jetbrains-mono-nerd-font" = "latest"
+
+# ==============================================================================
+# WORK TOOLS (mise install)
+# ==============================================================================
+[tools]
+"aqua:google-antigravity/antigravity-cli" = "latest"
+"aqua:bitwarden/clients" = "latest"
+"aqua:anthropics/claude-code" = "latest"
+"aqua:controlplaneio-fluxcd/flux-operator" = "latest"
+"aqua:controlplaneio-fluxcd/flux-operator/flux-operator-mcp" = "latest"
+"aqua:derailed/k9s" = "latest"
+"aqua:kubernetes/kubernetes/kubectl" = "latest"
+"aqua:ahmetb/kubectx" = "latest"
+"aqua:yannh/kubeconform" = "latest"
+"aqua:kubernetes-sigs/kustomize" = "latest"
+"core:node" = "latest"
+"aqua:opentofu/opentofu" = "latest"
+"aqua:tmux/tmux-builds" = "latest"
+"core:python" = "latest"
+"aqua:GoogleCloudPlatform/terraformer" = "latest"
+"aqua:gruntwork-io/terragrunt" = "latest"
+"aqua:tfutils/tfenv" = "latest"
+"aqua:terraform-linters/tflint" = "latest"

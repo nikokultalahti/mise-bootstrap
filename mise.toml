@@ -58,7 +58,8 @@ variants = [
 ]
 
 # ==============================================================================
-# UNIVERSAL TOOLS (mise install)
+# COMMON TOOLS (mise install)
+# Shared across all machines (Linux and macOS)
 # ==============================================================================
 [tools]
 age = "latest"            # Required for decrypting files
@@ -69,17 +70,19 @@ eza = "latest"
 fd = "latest"
 fzf = "latest"
 gh = "latest"
+helix = "latest"
 jq = "latest"
 pre-commit = "latest"
 ripgrep = "latest"
 shellcheck = "latest"
+sops = "latest"
 starship = "latest"
 tealdeer = "latest"
 television = "latest"
 yq = "latest"
-yt-dlp = "latest"
 zoxide = "latest"
-"github:aaif-goose/goose" = "latest"
+"github:timrogers/litra-rs" = "latest"
+"github:timrogers/litra-autotoggle" = "latest"
 
 # ==============================================================================
 # DECRYPT SYSTEM SECRETS
