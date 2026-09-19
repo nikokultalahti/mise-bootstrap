@@ -17,7 +17,7 @@ else
     echo "[✓] Mise is already installed"
 fi
 
-export PATH="$HOME/.local/bin:$PATH"
+export PATH="$HOME/.local/share/mise/shims:$HOME/.local/bin:$PATH"
 CURRENT_SHELL="$(basename "${SHELL:-bash}")"
 eval "$("$HOME/.local/bin/mise" activate "$CURRENT_SHELL" 2>/dev/null || "$HOME/.local/bin/mise" activate bash)"
 
@@ -102,10 +102,12 @@ fi
 # ------------------------------------------------------------------------------
 echo ""
 echo "[-] Running bootstrap through fnox..."
+# Ensure mise shims are in PATH for fnox's Bitwarden provider
+export PATH="$HOME/.local/share/mise/shims:$HOME/.local/bin:$PATH"
 if [ -n "$BOOTSTRAP_ENV_FLAG" ]; then
-    fnox exec -- mise "$BOOTSTRAP_ENV_FLAG" bootstrap --force-dotfiles
+    env BW_SESSION="$BW_SESSION" PATH="$PATH" fnox exec -- mise "$BOOTSTRAP_ENV_FLAG" bootstrap --force-dotfiles
 else
-    fnox exec -- mise bootstrap --force-dotfiles
+    env BW_SESSION="$BW_SESSION" PATH="$PATH" fnox exec -- mise bootstrap --force-dotfiles
 fi
 
 echo ""
