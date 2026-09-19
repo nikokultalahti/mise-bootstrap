@@ -28,7 +28,7 @@ Before bootstrapping a fresh computer, ensure your Bitwarden vault contains two 
 Run this single command in a terminal on a clean installation:
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/nikokultalahti/mise-bootstrap/feat/modular-scripts/bootstrap.sh)
+bash <(curl -fsSL https://raw.githubusercontent.com/nikokultalahti/mise-bootstrap/main/bootstrap.sh)
 ```
 *(Or `./bootstrap.sh` if the repository is already cloned).*
 
