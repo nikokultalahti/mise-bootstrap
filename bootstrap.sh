@@ -31,6 +31,13 @@ echo "[✓] Bitwarden CLI and fnox ready"
 # ------------------------------------------------------------------------------
 # 3. Configure and Authenticate Bitwarden
 # ------------------------------------------------------------------------------
+# Check if bw CLI is available
+if ! command -v bw &>/dev/null; then
+    echo "[!] Bitwarden CLI not found. Please ensure bitwarden is installed via mise."
+    echo "    Run: mise use -g bitwarden"
+    exit 1
+fi
+
 echo "[-] Configuring Bitwarden server (https://vault.bitwarden.eu)..."
 # Only set server if not already configured to the correct URL
 CURRENT_SERVER=$(bw config server 2>/dev/null || true)

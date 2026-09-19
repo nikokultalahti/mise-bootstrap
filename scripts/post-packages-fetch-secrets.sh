@@ -5,7 +5,7 @@ set -euo pipefail
 # HOOK: POST-PACKAGES
 # Runs immediately AFTER bootstrap.packages.
 # Fetches secrets via fnox environment variables (GITHUB_SSH_KEY, DOTFILES_AGE_KEY)
-# or falls back to Bitwarden CLI (Flatpak on Linux, native on macOS).
+# or falls back to Bitwarden CLI.
 # ==============================================================================
 
 fetch_secrets() {
@@ -43,76 +43,66 @@ fetch_secrets() {
 }
 
 fetch_age_via_bw() {
-    BW_COMMAND=""
-    if [[ "$(uname -s)" == "Linux" ]]; then
-        BW_COMMAND="flatpak run --command=bw com.bitwarden.desktop"
-    elif [[ "$(uname -s)" == "Darwin" ]]; then
-        BW_COMMAND="bw"
-    fi
-
-    if [[ -z "$BW_COMMAND" ]]; then
+    # Check if bw CLI is available
+    if ! command -v bw &>/dev/null; then
         echo "[!] Bitwarden CLI not available, cannot fetch age key"
+        echo "    Please install Bitwarden CLI via mise first"
         return 1
     fi
 
     echo "[-] Checking Bitwarden authentication to fetch age key [-]"
 
     # Only configure server if not already set to the correct URL
-    CURRENT_SERVER=$($BW_COMMAND config server 2>/dev/null || true)
+    CURRENT_SERVER=$(bw config server 2>/dev/null || true)
     if [[ "$CURRENT_SERVER" != "https://vault.bitwarden.eu" ]]; then
-        $BW_COMMAND config server https://vault.bitwarden.eu
+        bw config server https://vault.bitwarden.eu
     fi
 
     # Only login if NOT already authenticated
-    if ! $BW_COMMAND login --check >/dev/null 2>&1; then
-        $BW_COMMAND login
+    if ! bw login --check >/dev/null 2>&1; then
+        bw login
     else
         echo "[✓] Bitwarden already configured and logged in"
     fi
 
     # Unlock vault for this session
-    BW_SESSION=$($BW_COMMAND unlock --raw)
+    BW_SESSION=$(bw unlock --raw)
 
     mkdir -p "$HOME/.config/age"
-    $BW_COMMAND get notes "dotfiles-age-key" --session "$BW_SESSION" > "$HOME/.config/age/dotfiles-age-key.txt"
+    bw get notes "mise-age-key" --session "$BW_SESSION" > "$HOME/.config/age/dotfiles-age-key.txt"
     chmod 600 "$HOME/.config/age/dotfiles-age-key.txt"
     echo "[✓] Age secret key restored from Bitwarden to ~/.config/age/dotfiles-age-key.txt"
 }
 
 fetch_ssh_via_bw() {
-    BW_COMMAND=""
-    if [[ "$(uname -s)" == "Linux" ]]; then
-        BW_COMMAND="flatpak run --command=bw com.bitwarden.desktop"
-    elif [[ "$(uname -s)" == "Darwin" ]]; then
-        BW_COMMAND="bw"
-    fi
-
-    if [[ -z "$BW_COMMAND" ]]; then
+    # Check if bw CLI is available
+    if ! command -v bw &>/dev/null; then
         echo "[!] Bitwarden CLI not available, cannot fetch SSH key"
+        echo "    Please install Bitwarden CLI via mise first"
         return 1
     fi
 
     echo "[-] Checking Bitwarden authentication to fetch SSH key [-]"
 
     # Only configure server if not already set to the correct URL
-    CURRENT_SERVER=$($BW_COMMAND config server 2>/dev/null || true)
+    CURRENT_SERVER=$(bw config server 2>/dev/null || true)
     if [[ "$CURRENT_SERVER" != "https://vault.bitwarden.eu" ]]; then
-        $BW_COMMAND config server https://vault.bitwarden.eu
+        bw config server https://vault.bitwarden.eu
     fi
 
     # Only login if NOT already authenticated
-    if ! $BW_COMMAND login --check >/dev/null 2>&1; then
-        $BW_COMMAND login
+    if ! bw login --check >/dev/null 2>&1; then
+        bw login
     else
         echo "[✓] Bitwarden already configured and logged in"
     fi
 
     # Unlock vault for this session
-    BW_SESSION=$($BW_COMMAND unlock --raw)
+    BW_SESSION=$(bw unlock --raw)
 
     mkdir -p "$HOME/.ssh"
     chmod 700 "$HOME/.ssh"
-    $BW_COMMAND get notes "dotfiles-github-auth-key" --session "$BW_SESSION" > "$HOME/.ssh/id_ed25519"
+    bw get notes "mise-github-auth-key" --session "$BW_SESSION" > "$HOME/.ssh/id_ed25519"
     chmod 600 "$HOME/.ssh/id_ed25519"
 
     touch "$HOME/.ssh/known_hosts"
