@@ -60,6 +60,11 @@ BW_SESSION="$(bw unlock --raw)"
 export BW_SESSION
 echo "[✓] Bitwarden vault unlocked"
 
+# Enable mise auto-update globally (must be set in global config, not project config)
+echo "[-] Enabling mise auto-update..."
+mise settings set auto_update true
+echo "[✓] mise auto-update enabled"
+
 # ------------------------------------------------------------------------------
 # 4. Ensure Repository is Cloned & Enter Directory
 # ------------------------------------------------------------------------------
