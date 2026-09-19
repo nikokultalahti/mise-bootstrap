@@ -36,7 +36,7 @@ bw config server https://vault.bitwarden.eu
 
 if ! bw login --check &>/dev/null; then
     echo "[-] Logging in to Bitwarden..."
-    bw login
+    bw login --apikey
 else
     echo "[✓] Bitwarden already logged in"
 fi
