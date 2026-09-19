@@ -4,22 +4,8 @@ set -euo pipefail
 # ==============================================================================
 # HOOK: POST-PACKAGES
 # Runs immediately AFTER bootstrap.packages.
-# 1. Configures GNOME Software for automatic background Flatpak updates.
-# 2. Fetches secrets via fnox environment variables (GITHUB_SSH_KEY, DOTFILES_AGE_KEY)
-#    or falls back to Bitwarden CLI (Flatpak on Linux, native on macOS).
-# ==============================================================================
-
-# Enable GNOME Software background updates on Linux
-if [[ "$(uname -s)" == "Linux" ]]; then
-    if command -v gsettings &>/dev/null; then
-        gsettings set org.gnome.software download-updates true
-        gsettings set org.gnome.software download-updates-notify true
-        echo "[✓] Automatic GNOME Software updates turned on"
-    fi
-fi
-
-# ==============================================================================
-# Secret Retrieval: Try fnox environment variables first, fall back to bw CLI
+# Fetches secrets via fnox environment variables (GITHUB_SSH_KEY, DOTFILES_AGE_KEY)
+# or falls back to Bitwarden CLI (Flatpak on Linux, native on macOS).
 # ==============================================================================
 
 fetch_secrets() {

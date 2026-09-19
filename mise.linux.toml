@@ -6,10 +6,11 @@
 # ==============================================================================
 # HOOK: PRE-PACKAGES
 # Runs immediately BEFORE bootstrap.packages.
-# Configures Flathub, migrates any Fedora Flatpaks, and disables Fedora remote.
+# Configures Flathub, migrates any Fedora Flatpaks, disables Fedora remote and
+# sets Gnome Software automatic updates.
 # ==============================================================================
 [bootstrap.hooks.pre-packages]
-run = "\"{{config_root}}/scripts/pre-packages.sh\""
+run = "\"{{config_root}}/scripts/linux/pre-packages-config-flatpak-gnome.sh\""
 
 # ==============================================================================
 # SYSTEM PACKAGES (mise bootstrap packages apply)
@@ -71,7 +72,6 @@ run = "\"{{config_root}}/scripts/pre-packages.sh\""
 # PERSONAL CLI TOOLS (Linux)
 # ==============================================================================
 [tools]
-yt-dlp = "latest"
 "github:aaif-goose/goose" = "latest"
 "github:danielmiessler/fabric" = "latest"
 "aqua:siderolabs/talos" = "latest"

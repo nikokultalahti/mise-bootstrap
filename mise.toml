@@ -25,7 +25,7 @@ machine_type = "personal"
 # Fetches secrets via fnox environment variables or falls back to Bitwarden CLI.
 # ============================================================================================
 [bootstrap.hooks.post-packages]
-run = "\"{{config_root}}/scripts/post-packages.sh\""
+run = "\"{{config_root}}/scripts/post-packages-fetch-secrets.sh\""
 
 # ==============================================================================
 # DOTFILES & TEMPLATES (mise bootstrap dotfiles apply)
@@ -81,6 +81,7 @@ tealdeer = "latest"
 television = "latest"
 yq = "latest"
 zoxide = "latest"
+yt-dlp = "latest"
 "github:timrogers/litra-rs" = "latest"
 "github:timrogers/litra-autotoggle" = "latest"
 
@@ -89,7 +90,7 @@ zoxide = "latest"
 # Decrypts secrets using age immediately after tools are installed
 # ==============================================================================
 [bootstrap.hooks.post-tools]
-run = "\"{{config_root}}/scripts/post-tools.sh\""
+run = "\"{{config_root}}/scripts/post-tools-decrypt-secrets.sh\""
 
 # ==============================================================================
 # FINAL HOOK (mise bootstrap final-hook)

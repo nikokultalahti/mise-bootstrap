@@ -7,6 +7,7 @@ set -euo pipefail
 # Configures Flathub, migrates any Fedora Flatpaks, and disables Fedora remote.
 # ==============================================================================
 
+# 1. Configures Flathub, migrates any Fedora Flatpaks, and disables Fedora remote.
 if [[ "$(uname -s)" == "Linux" ]] && command -v flatpak &>/dev/null; then
     echo "[-] Ensuring Flathub is added and prioritized [-]"
     
@@ -18,4 +19,13 @@ if [[ "$(uname -s)" == "Linux" ]] && command -v flatpak &>/dev/null; then
     flatpak remote-modify --prio=1 fedora 2>/dev/null || true
 
     echo "[✓] Flathub is now the primary Flatpak repository"
+fi
+
+# 2. Enable GNOME Software background updates on Linux
+if [[ "$(uname -s)" == "Linux" ]]; then
+    if command -v gsettings &>/dev/null; then
+        gsettings set org.gnome.software download-updates true
+        gsettings set org.gnome.software download-updates-notify true
+        echo "[✓] Automatic GNOME Software updates turned on"
+    fi
 fi
