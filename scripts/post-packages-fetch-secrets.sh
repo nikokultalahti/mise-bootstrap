@@ -57,9 +57,14 @@ fetch_age_via_bw() {
 
     echo "[-] Checking Bitwarden authentication to fetch age key [-]"
 
-    # Only configure server and login if NOT already authenticated
-    if ! $BW_COMMAND login --check >/dev/null 2>&1; then
+    # Only configure server if not already set to the correct URL
+    CURRENT_SERVER=$($BW_COMMAND config server 2>/dev/null || true)
+    if [[ "$CURRENT_SERVER" != "https://vault.bitwarden.eu" ]]; then
         $BW_COMMAND config server https://vault.bitwarden.eu
+    fi
+
+    # Only login if NOT already authenticated
+    if ! $BW_COMMAND login --check >/dev/null 2>&1; then
         $BW_COMMAND login
     else
         echo "[✓] Bitwarden already configured and logged in"
@@ -89,9 +94,14 @@ fetch_ssh_via_bw() {
 
     echo "[-] Checking Bitwarden authentication to fetch SSH key [-]"
 
-    # Only configure server and login if NOT already authenticated
-    if ! $BW_COMMAND login --check >/dev/null 2>&1; then
+    # Only configure server if not already set to the correct URL
+    CURRENT_SERVER=$($BW_COMMAND config server 2>/dev/null || true)
+    if [[ "$CURRENT_SERVER" != "https://vault.bitwarden.eu" ]]; then
         $BW_COMMAND config server https://vault.bitwarden.eu
+    fi
+
+    # Only login if NOT already authenticated
+    if ! $BW_COMMAND login --check >/dev/null 2>&1; then
         $BW_COMMAND login
     else
         echo "[✓] Bitwarden already configured and logged in"

@@ -32,7 +32,14 @@ echo "[✓] Bitwarden CLI and fnox ready"
 # 3. Configure and Authenticate Bitwarden
 # ------------------------------------------------------------------------------
 echo "[-] Configuring Bitwarden server (https://vault.bitwarden.eu)..."
-bw config server https://vault.bitwarden.eu
+# Only set server if not already configured to the correct URL
+CURRENT_SERVER=$(bw config server 2>/dev/null || true)
+if [[ "$CURRENT_SERVER" != "https://vault.bitwarden.eu" ]]; then
+    bw config server https://vault.bitwarden.eu
+    echo "[✓] Bitwarden server configured"
+else
+    echo "[✓] Bitwarden server already configured"
+fi
 
 if ! bw login --check &>/dev/null; then
     echo "[-] Logging in to Bitwarden..."
