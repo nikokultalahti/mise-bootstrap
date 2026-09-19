@@ -6,5 +6,6 @@
 type = "bitwarden"
 
 [secrets]
-GITHUB_SSH_KEY   = { provider = "bitwarden", value = "dotfiles-github-auth-key/notes" }
-DOTFILES_AGE_KEY = { provider = "bitwarden", value = "dotfiles-age-key/notes" }
+GITHUB_SSH_KEY   = { provider = "bitwarden", value = "mise-github-auth-key/notes" }
+DOTFILES_AGE_KEY = { provider = "bitwarden", value = "mise-age-key/notes" }
+MISE_GITHUB_TOKEN = { provider = "bitwarden", value = "mise-github-token/notes"}

@@ -12,10 +12,12 @@ This repository provisions an entire developer workstation from scratch in a sin
 
 Before bootstrapping a fresh computer, ensure your Bitwarden vault contains two **Secure Notes**:
 
-1. **`dotfiles-github-auth-key`**:
+1. **`mise-github-auth-key`**:
    Your OpenSSH private key with push access to your GitHub account (`-----BEGIN OPENSSH PRIVATE KEY-----`).
-2. **`dotfiles-age-key`**:
+2. **`mise-age-key`**:
    Your raw `age` private key (`AGE-SECRET-KEY-1...`).
+3. Optional, but recommended: **`mise-github-token`**:
+   Token for Mise when downloading packages/tools to prevent rate limit error
 
 *(Ensure the matching SSH public key is added to your GitHub account under **Settings → SSH and GPG keys**).*
 
