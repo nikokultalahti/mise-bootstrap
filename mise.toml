@@ -22,7 +22,7 @@ machine_type = "personal"
 # ============================================================================================
 # HOOK: POST-PACKAGES
 # Runs immediately AFTER bootstrap.packages.
-# Uses Bitwarden CLI (Flatpak on Linux, native on macOS) to fetch AGE and SSH keys.
+# Fetches secrets via fnox environment variables or falls back to Bitwarden CLI.
 # ============================================================================================
 [bootstrap.hooks.post-packages]
 run = "\"{{config_root}}/scripts/post-packages.sh\""

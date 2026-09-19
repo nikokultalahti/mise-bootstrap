@@ -65,7 +65,7 @@ mise -E work bootstrap --from https://github.com/nikokultalahti/mise-bootstrap.g
 - **What gets installed:** Common CLI tools, macOS Homebrew packages (`zsh-autosuggestions`, `zsh-syntax-highlighting`), work Homebrew casks & formulae (19 casks including `aerospace`, `raycast`, `gcloud-cli`, `ghostty`, `hermes-desktop`, `visual-studio-code`, plus `podman`, `hermes-agent`), work developer tools (`kubectl`, `k9s`, `terragrunt`, `opentofu`, `claude-code`, etc.), and work-tailored dotfiles (work email, Google Cloud SDK shell integrations, Bitbucket SSH rewrite).
 - **Automatic Persistence:** The final bootstrap hook (`scripts/final.sh`) automatically runs `mise settings set env work`, writing `env = "work"` to `~/.config/mise/config.local.toml`. On all subsequent runs (`mise bootstrap`, `mise install`, `mise upgrade`), your work Mac stays in the `work` environment without needing `-E work` again!
 
-During either run, the Bitwarden CLI will prompt you to authenticate once. It will automatically extract your SSH key and `age` key into place, configure system files, deploy dotfiles, install tools, and flip the git remote to SSH.
+During either run, secrets are fetched via fnox (using Bitwarden as the provider) or directly via Bitwarden CLI as a fallback. Your SSH key and `age` key are automatically extracted into place, system files are configured, dotfiles are deployed, tools are installed, and the git remote is flipped to SSH.
 
 ---
 
@@ -116,7 +116,7 @@ systemctl reboot
        ↓
 [bootstrap.packages] (Flatpaks installed)
        ↓
-[bootstrap.hooks.post-packages] (Bitwarden CLI login & key retrieval)
+[bootstrap.hooks.post-packages] (Secret retrieval via fnox or Bitwarden CLI fallback)
        ↓
 [bootstrap.files] (/etc system configs placed)
        ↓
@@ -137,7 +137,7 @@ systemctl reboot
 - **System Packages (`[bootstrap.packages]`):** Installs desktop Flatpaks (Bitwarden, Commit, Firefox, Thunderbird, Obsidian, Signal, Pods, Flatseal, etc.).
 - **Post-Packages Hook (`scripts/post-packages.sh`):** 
   - Enables GNOME Software automatic background updates.
-  - Launches the Bitwarden CLI, prompts for authentication, and extracts `~/.ssh/id_ed25519` and your `age` key.
+  - Fetches `~/.ssh/id_ed25519` and your `age` key from fnox environment variables (`GITHUB_SSH_KEY`, `DOTFILES_AGE_KEY`), or falls back to Bitwarden CLI if fnox is not used.
   - Pre-seeds `github.com` into `~/.ssh/known_hosts`.
 - **System Files (`[bootstrap.files]`):** Declaratively manages `/etc/rpm-ostreed.conf` and `/etc/yum.repos.d/vscode.repo` owned by `root`.
 - **System Services (`[bootstrap.services]`):** Enables `rpm-ostreed-automatic.timer` (background OS update staging) and the user-level rootless `podman.socket` (for Dev Containers).
