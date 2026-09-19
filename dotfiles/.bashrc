@@ -14,7 +14,6 @@ eval "$(mise activate bash)"
 
 # Set Bitwarden SSH agent for dev containers
 export SSH_AUTH_SOCK="$HOME/.var/app/com.bitwarden.desktop/data/.bitwarden-ssh-agent.sock"
-alias bw="flatpak run --command=bw com.bitwarden.desktop"
 
 # User specific aliases and functions
 if [ -d ~/.bashrc.d ]; then
