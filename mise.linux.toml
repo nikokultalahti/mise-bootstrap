@@ -10,7 +10,7 @@
 # sets Gnome Software automatic updates.
 # ==============================================================================
 [bootstrap.hooks.pre-packages]
-run = "\"{{config_root}}/scripts/linux/pre-packages-config-flatpak-gnome.sh\""
+run = "\"$HOME/Dev/mise-bootstrap/scripts/linux/pre-packages-config-flatpak-gnome.sh\""
 
 # ==============================================================================
 # SYSTEM PACKAGES (mise bootstrap packages apply)

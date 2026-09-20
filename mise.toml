@@ -25,7 +25,7 @@ machine_type = "personal"
 # Fetches secrets via fnox environment variables or falls back to Bitwarden CLI.
 # ============================================================================================
 [bootstrap.hooks.post-packages]
-run = "\"{{config_root}}/scripts/post-packages-fetch-secrets.sh\""
+run = "\"$HOME/Dev/mise-bootstrap/scripts/post-packages-fetch-secrets.sh\""
 
 # ==============================================================================
 # DOTFILES & TEMPLATES (mise bootstrap dotfiles apply)
@@ -90,10 +90,10 @@ yt-dlp = "latest"
 # Decrypts secrets using age immediately after tools are installed
 # ==============================================================================
 [bootstrap.hooks.post-tools]
-run = "\"{{config_root}}/scripts/post-tools-decrypt-secrets.sh\""
+run = "\"$HOME/Dev/mise-bootstrap/scripts/post-tools-decrypt-secrets.sh\""
 
 # ==============================================================================
 # FINAL HOOK (mise bootstrap final-hook)
 # ==============================================================================
 [bootstrap.hooks.final]
-run = "\"{{config_root}}/scripts/final.sh\" {{ vars.machine_type }}"
+run = "\"$HOME/Dev/mise-bootstrap/scripts/final.sh\" {{ vars.machine_type }}"
