@@ -72,6 +72,7 @@ run = "\"$HOME/Dev/mise-bootstrap/scripts/linux/pre-packages-config-flatpak-gnom
 # PERSONAL CLI TOOLS (Linux)
 # ==============================================================================
 [tools]
+"github:yt-dlp/yt-dlp" = "latest"
 "github:aaif-goose/goose" = "latest"
 "github:danielmiessler/fabric" = "latest"
 "aqua:siderolabs/talos" = "latest"
