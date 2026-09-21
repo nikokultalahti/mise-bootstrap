@@ -51,10 +51,17 @@ run = "\"$HOME/Dev/mise-bootstrap/scripts/post-packages-fetch-secrets.sh\""
 
 [dotfiles."vscode/settings.json"]
 source = "dotfiles/.config/vscode/settings.tera"
-mode = "template" 
+mode = "template"
 variants = [
   { os = "macos", target = "~/Library/Application Support/Code/User/settings.json" },
   { os = "linux", target = "~/.config/Code/User/settings.json" }
+]
+
+[dotfiles."zed/settings.json"]
+source = "dotfiles/.config/zed/settings.tera"
+mode = "template"
+variants = [
+  { os = "linux", target = "~/.var/app/dev.zed.Zed/config/zed/settings.json" }
 ]
 
 # ==============================================================================
