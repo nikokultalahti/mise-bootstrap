@@ -63,10 +63,9 @@ run = "\"$HOME/Dev/mise-bootstrap/scripts/linux/pre-packages-config-flatpak-gnom
 
 # --- Dev Tools ---
 "flatpak:dev.zed.Zed" = "latest"
-"flatpak:re.sonny.Commit" = "latest" 
+"flatpak:re.sonny.Commit" = "latest"
 "flatpak:me.iepure.devtoolbox" = "latest"
 "flatpak:com.mardojai.ForgeSparks" = "latest"
-"flatpak:de.wwwtech.gitte" = "latest"
 
 # ==============================================================================
 # PERSONAL CLI TOOLS (Linux)
