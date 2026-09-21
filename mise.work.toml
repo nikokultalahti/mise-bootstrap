@@ -13,6 +13,7 @@ machine_type = "work"
 [bootstrap.packages]
 # --- Homebrew Formulae ---
 "brew:hermes-agent" = "latest"
+"brew:googleworkspace-cli" = "latest"
 "brew:podman" = "latest"
 "brew:podman-compose" = "latest"
 
