@@ -21,4 +21,5 @@
     "dev.containers.dockerSocketPath": "/run/user/501/podman/podman.sock"
     {% endif %}
     "update.mode": "none"
+    "chat.titleBar.signIn.enabled": false
 }
