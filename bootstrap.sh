@@ -50,7 +50,7 @@ fi
 
 if ! bw login --check &>/dev/null; then
     echo "[-] Logging in to Bitwarden..."
-    bw login --apikey
+    bw login
 else
     echo "[✓] Bitwarden already logged in"
 fi
