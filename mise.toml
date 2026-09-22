@@ -6,9 +6,8 @@
 # ==============================================================================
 
 [settings]
-# mise auto-update is controlled by global config (~/.config/mise/config.toml)
-# Run: mise settings set auto_update true
 age.key_file = "$HOME/.config/age/dotfiles-age-key.txt"
+auto_update = true
 
 # ==============================================================================
 # DEFAULT VARIABLES (Personal Profile)
