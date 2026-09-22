@@ -18,8 +18,10 @@
     "dev.containers.dockerSocketPath": "/run/user/1000/podman/podman.sock",
     {% endif %}
     {% if os() == "macos" %}
-    "dev.containers.dockerSocketPath": "/run/user/501/podman/podman.sock"
+    "dev.containers.dockerSocketPath": "/run/user/501/podman/podman.sock",
     {% endif %}
-    "update.mode": "none"
+    "containers.containerClient": "com.microsoft.visualstudio.containers.podman",
+    "containers.orchestratorClient": "com.microsoft.visualstudio.orchestrators.podmancompose"
+    "update.mode": "none",
     "chat.titleBar.signIn.enabled": false
 }
