@@ -95,7 +95,7 @@ fnox = "latest"
 "github:timrogers/litra-autotoggle" = "latest"
 
 # ==============================================================================
-# DECRYPT SYSTEM SECRETS
+# HOOK: POST-TOOLSDECRYPT SYSTEM SECRETS
 # Decrypts secrets using age immediately after tools are installed
 # ==============================================================================
 [bootstrap.hooks.post-tools]

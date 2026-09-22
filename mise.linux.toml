@@ -98,14 +98,6 @@ owner = "root"
 mode = "0755"
 
 # ==============================================================================
-# HOOK: PRE-SERVICES
-# Runs immediately BEFORE bootstrap.services.
-# Enables rootless Podman user socket for Dev Containers.
-# ==============================================================================
-[bootstrap.hooks.pre-services]
-run = "\"$HOME/Dev/mise-bootstrap/scripts/linux/pre-services-enable-podman-socket.sh\""
-
-# ==============================================================================
 # SYSTEM SERVICES (mise bootstrap services apply)
 # Converges systemd units (both system-level timers and user sockets)
 # ==============================================================================
@@ -131,3 +123,11 @@ on_calendar = "daily"
 randomized_delay_sec = "30m"
 persistent = true
 unit = "workstation-auto-update"
+
+# ==============================================================================
+# HOOK: PRE-TOOLS
+# Runs immediately BEFORE bootstrap.tools.
+# Enables rootless Podman user socket for Dev Containers.
+# ==============================================================================
+[bootstrap.hooks.pre-tools]
+run = "\"$HOME/Dev/mise-bootstrap/scripts/linux/pre-tools-podman-socket.sh\""
