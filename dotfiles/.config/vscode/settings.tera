@@ -23,5 +23,10 @@
     "containers.containerClient": "com.microsoft.visualstudio.containers.podman",
     "containers.orchestratorClient": "com.microsoft.visualstudio.orchestrators.podmancompose"
     "update.mode": "none",
-    "chat.titleBar.signIn.enabled": false
+    "chat.titleBar.signIn.enabled": false,
+    // Auto-provision every Dev Container (any project's .devcontainer.json)
+    // with this repo's CLI tools and shell/git dotfiles on creation.
+    "dotfiles.repository": "https://github.com/nikokultalahti/mise-bootstrap.git",
+    "dotfiles.targetPath": "~/Dev/mise-bootstrap",
+    "dotfiles.installCommand": "~/Dev/mise-bootstrap/scripts/devcontainer-setup.sh"
 }
