@@ -6,6 +6,7 @@
 type = "bitwarden"
 
 [secrets]
-GITHUB_SSH_KEY   = { provider = "bitwarden", value = "mise-github-auth-key/notes" }
-DOTFILES_AGE_KEY = { provider = "bitwarden", value = "mise-age-key/notes" }
-MISE_GITHUB_TOKEN = { provider = "bitwarden", value = "mise-github-token/notes"}
+GITHUB_SSH_KEY    = { provider = "bitwarden", value = "mise-github-auth-key/notes" }
+MISE_GITHUB_TOKEN = { provider = "bitwarden", value = "mise-github-token/notes" }
+SSH_CONFIG        = { provider = "bitwarden", value = "mise-ssh-config/notes" }
+NEXTDNS_CONFIG    = { provider = "bitwarden", value = "mise-nextdns-conf/notes" }

@@ -9,7 +9,6 @@
 # ==============================================================================
 
 [settings]
-age.key_file = "$HOME/.config/age/dotfiles-age-key.txt"
 auto_update = true
 
 # ==============================================================================
@@ -94,7 +93,6 @@ variants = [
 # Shared across all machines (Linux and macOS)
 # ==============================================================================
 [tools]
-"aqua:FiloSottile/age" = "latest"  # Required for decrypting files
 "aqua:atuinsh/atuin" = "latest"
 "aqua:sharkdp/bat" = "latest"
 "aqua:bitwarden/clients" = "latest"
@@ -120,14 +118,15 @@ fnox = "latest"
 "github:timrogers/litra-autotoggle" = "latest"
 
 # ==============================================================================
-# HOOK: POST-TOOLS - DECRYPT SYSTEM SECRETS
-# Decrypts secrets using age immediately after tools are installed.
+# HOOK: POST-TOOLS - FETCH CONFIG FILES FROM BITWARDEN
+# Places the SSH config and (personal + Linux only) NextDNS config, both
+# pulled directly from Bitwarden secure notes — no local encryption key
+# needed, unlike the age-based approach this replaced.
 # mise_env[0] ("personal"/"work") is passed through so the script can gate the
-# NextDNS part (personal + Linux only) without needing its own
-# role-detection logic.
+# NextDNS part without needing its own role-detection logic.
 # ==============================================================================
 [bootstrap.hooks.post-tools]
-run = "\"$HOME/Dev/mise-bootstrap/scripts/post-tools-decrypt-secrets.sh\" {{ mise_env[0] }}"
+run = "\"$HOME/Dev/mise-bootstrap/scripts/post-tools-fetch-config-files.sh\" {{ mise_env[0] }}"
 
 # ==============================================================================
 # FINAL HOOK (mise bootstrap final-hook)
