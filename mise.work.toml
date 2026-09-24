@@ -6,10 +6,9 @@
 # Linux), this file gets edited by hand at that point (the brew:/brew-cask:
 # entries below would need flatpak: equivalents) rather than maintained as a
 # generic "any macOS machine" layer in the meantime.
+# email_personal/email_work and role selection live in mise.toml's [vars]
+# and the builtin mise_env — see its comment for why.
 # ==============================================================================
-[vars]
-email = "niko.kultalahti@gapspgroup.com"
-machine_type = "work"
 
 # ==============================================================================
 # WORK SYSTEM PACKAGES (mise bootstrap packages apply)

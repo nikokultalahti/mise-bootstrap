@@ -46,7 +46,7 @@ MACHINE_TYPE="${1:-personal}"
 
 echo "[-] Persisting '$MACHINE_TYPE' environment settings [-]"
 mise settings set env "$MACHINE_TYPE"
-echo "[✓] Machine permanently configured with '$MACHINE_TYPE' profile in config.local.toml"
+echo "[✓] Machine permanently configured with '$MACHINE_TYPE' profile in ~/.config/mise/config.toml"
 
 echo ""
 echo "=================================================================="

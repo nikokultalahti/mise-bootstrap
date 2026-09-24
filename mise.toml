@@ -2,11 +2,10 @@
 # MISE MASTER CONFIGURATION (Base Layer)
 # Shared across both machines (personal and work).
 # Role layers (mise.personal.toml / mise.work.toml) both activate explicitly
-# via -E personal / -E work — neither is an implicit default, so email and
-# machine_type live in the role files, not here. Each role file contains
-# everything for that machine (tools, packages, system files/services/hooks)
-# rather than being split further by OS — see mise.personal.toml's and
-# mise.work.toml's own comments for why.
+# via -E personal / -E work — neither is an implicit default. Each role file
+# contains everything for that machine (tools, packages, system
+# files/services/hooks) rather than being split further by OS — see
+# mise.personal.toml's and mise.work.toml's own comments for why.
 # ==============================================================================
 
 [settings]
@@ -15,10 +14,22 @@ auto_update = true
 
 # ==============================================================================
 # SHARED VARIABLES
-# email/machine_type are role-specific — see mise.personal.toml / mise.work.toml
+# email_personal/email_work live here (flat, role-suffixed keys) rather than
+# as a single "email" var in each role file: `mise dotfiles status` uses a
+# restricted preview loader that doesn't fold a role file's [vars] into
+# templates declared in this shared mise.toml (verified against mise
+# 2026.9.12 — `mise dotfiles apply` merges them fine, but `status` reports a
+# false-positive render error). Keeping everything this template needs in the
+# same file it's declared in sidesteps that entirely, with no duplication of
+# the [dotfiles] entries themselves across role files. Role selection uses
+# mise's own builtin `mise_env` (see dotfiles/gitconfig.tera,
+# dotfiles/zshrc.tera) instead of a custom machine_type var, for the same
+# reason.
 # ==============================================================================
 [vars]
 name = "Niko Kultalahti"
+email_personal = "hello@nikokultalahti.com"
+email_work = "niko.kultalahti@gapspgroup.com"
 
 # ============================================================================================
 # HOOK: POST-PACKAGES
@@ -111,14 +122,15 @@ fnox = "latest"
 # ==============================================================================
 # HOOK: POST-TOOLS - DECRYPT SYSTEM SECRETS
 # Decrypts secrets using age immediately after tools are installed.
-# machine_type is passed through so the script can gate the NextDNS part
-# (personal + Linux only) without needing its own role-detection logic.
+# mise_env[0] ("personal"/"work") is passed through so the script can gate the
+# NextDNS part (personal + Linux only) without needing its own
+# role-detection logic.
 # ==============================================================================
 [bootstrap.hooks.post-tools]
-run = "\"$HOME/Dev/mise-bootstrap/scripts/post-tools-decrypt-secrets.sh\" {{ vars.machine_type }}"
+run = "\"$HOME/Dev/mise-bootstrap/scripts/post-tools-decrypt-secrets.sh\" {{ mise_env[0] }}"
 
 # ==============================================================================
 # FINAL HOOK (mise bootstrap final-hook)
 # ==============================================================================
 [bootstrap.hooks.final]
-run = "\"$HOME/Dev/mise-bootstrap/scripts/final.sh\" {{ vars.machine_type }}"
+run = "\"$HOME/Dev/mise-bootstrap/scripts/final.sh\" {{ mise_env[0] }}"

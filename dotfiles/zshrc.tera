@@ -44,7 +44,7 @@ export CARAPACE_BRIDGES='zsh,fish,bash,inshellisense'
 zstyle ':completion:*' format $'\e[2;37mCompleting %d\e[m'
 source <(carapace _carapace)
 
-{% if vars.machine_type == "work" %}
+{% if mise_env is defined and "work" in mise_env %}
 # Google Cloud SDK & work toolchains (macOS)
 if [[ -f "$(brew --prefix 2>/dev/null)/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh.inc" ]]; then
     source "$(brew --prefix)/Caskroom/google-cloud-sdk/latest/google-cloud-sdk/path.zsh.inc"

@@ -3,10 +3,9 @@
 # Activated via: mise -E personal bootstrap
 # Everything for the personal machine lives here.
 # The assumption is that Linux is used as personal machine.
+# email_personal/email_work and role selection live in mise.toml's [vars]
+# and the builtin mise_env — see its comment for why.
 # ==============================================================================
-[vars]
-email = "hello@nikokultalahti.com"
-machine_type = "personal"
 
 # ==============================================================================
 # HOOK: PRE-PACKAGES
