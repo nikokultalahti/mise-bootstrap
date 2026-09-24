@@ -2,7 +2,7 @@
 # MISE PERSONAL PROFILE (Fedora Silverblue)
 # Activated via: mise -E personal bootstrap
 # Everything for the personal machine lives here.
- The assumption is that Linux is used as personal machine.
+# The assumption is that Linux is used as personal machine.
 # ==============================================================================
 [vars]
 email = "hello@nikokultalahti.com"
