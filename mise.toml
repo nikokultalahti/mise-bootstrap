@@ -9,8 +9,27 @@
 # ==============================================================================
 
 [settings]
-age.key_file = "$HOME/.config/age/dotfiles-age-key.txt"
 auto_update = true
+
+# ==============================================================================
+# SECRETS (mise bootstrap secrets status)
+# Resolved before any other bootstrap phase runs. Without fnox, 
+# `mise bootstrap --prompt-secrets` prompts for any missing value interactively instead.
+# ==============================================================================
+[bootstrap.secrets]
+github_ssh_key = "GITHUB_SSH_KEY"
+
+[bootstrap.directories."~/.ssh"]
+mode = "0700"
+
+[bootstrap.files."~/.ssh/id_ed25519"]
+content = "{{ secret(name=\"github_ssh_key\") }}"
+template = true
+mode = "0600"
+
+[bootstrap.files."~/.ssh/known_hosts"]
+content = "github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl\n"
+mode = "0644"
 
 # ==============================================================================
 # SHARED VARIABLES
@@ -30,14 +49,6 @@ auto_update = true
 name = "Niko Kultalahti"
 email_personal = "hello@nikokultalahti.com"
 email_work = "niko.kultalahti@gapspgroup.com"
-
-# ============================================================================================
-# HOOK: POST-PACKAGES
-# Runs immediately AFTER bootstrap.packages.
-# Fetches secrets via fnox environment variables or falls back to Bitwarden CLI.
-# ============================================================================================
-[bootstrap.hooks.post-packages]
-run = "\"$HOME/Dev/mise-bootstrap/scripts/post-packages-fetch-secrets.sh\""
 
 # ==============================================================================
 # DOTFILES & TEMPLATES (mise bootstrap dotfiles apply)
@@ -94,7 +105,6 @@ variants = [
 # Shared across all machines (Linux and macOS)
 # ==============================================================================
 [tools]
-"aqua:FiloSottile/age" = "latest"  # Required for decrypting files
 "aqua:atuinsh/atuin" = "latest"
 "aqua:sharkdp/bat" = "latest"
 "aqua:bitwarden/clients" = "latest"
@@ -118,16 +128,6 @@ fnox = "latest"
 "aqua:ajeetdsouza/zoxide" = "latest"
 "github:timrogers/litra-rs" = "latest"
 "github:timrogers/litra-autotoggle" = "latest"
-
-# ==============================================================================
-# HOOK: POST-TOOLS - DECRYPT SYSTEM SECRETS
-# Decrypts secrets using age immediately after tools are installed.
-# mise_env[0] ("personal"/"work") is passed through so the script can gate the
-# NextDNS part (personal + Linux only) without needing its own
-# role-detection logic.
-# ==============================================================================
-[bootstrap.hooks.post-tools]
-run = "\"$HOME/Dev/mise-bootstrap/scripts/post-tools-decrypt-secrets.sh\" {{ mise_env[0] }}"
 
 # ==============================================================================
 # FINAL HOOK (mise bootstrap final-hook)
