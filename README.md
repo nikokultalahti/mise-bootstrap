@@ -14,8 +14,8 @@ Before bootstrapping a fresh computer, ensure your Bitwarden vault contains thes
 
 1. **`mise-github-auth-key`**:
    Your OpenSSH private key with push access to your GitHub account (`-----BEGIN OPENSSH PRIVATE KEY-----`).
-2. **`mise-ssh-config`**:
-   The full contents of your `~/.ssh/config`.
+2. **`mise-ssh-config-personal`** / **`mise-ssh-config-work`**:
+   The full contents of `~/.ssh/config` for that machine.
 3. **`mise-nextdns-conf`** (personal Linux machine only):
    The full contents of `/etc/systemd/resolved.conf.d/nextdns.conf`.
 4. Optional, but recommended: **`mise-github-token`**:
@@ -69,7 +69,7 @@ mise -E work bootstrap --from https://github.com/nikokultalahti/mise-bootstrap.g
 
 > If either machine's OS ever changes (e.g. work moves to Linux), the relevant role file is edited by hand at that point — there's deliberately no generic OS layer being maintained.
 
-During either run, secrets are fetched via fnox (using Bitwarden as the provider) or directly via Bitwarden CLI as a fallback. Your SSH key, SSH config, and (personal Linux only) NextDNS config are automatically extracted into place, system files are configured, dotfiles are deployed, tools are installed, and the git remote is flipped to SSH.
+During either run, mise's native `[bootstrap.secrets]` reads your SSH key, SSH config, and (personal Linux only) NextDNS config straight from the fnox-populated environment and writes them to their target paths — no custom fetch script involved. System files are configured, dotfiles are deployed, tools are installed, and the git remote is flipped to SSH.
 
 ---
 
@@ -101,12 +101,12 @@ systemctl reboot
 2. **Immutable Host Boundary (Silverblue):** Keep host OS layering minimal. 
 3. **GUI Applications via Flathub:** Desktop apps are installed exclusively from Flathub. Flathub builds bundle required codecs and runtimes, eliminating host package conflicts and dirty codec layering.
 4. **User-Space CLI Tooling:** Developer CLI binaries are installed into `~/.local/share/mise` rather than host package layers or Homebrew.
-5. **Secrets Pulled Directly from Bitwarden:** During bootstrap, secrets are read straight out of Bitwarden secure notes (via fnox, or the `bw` CLI as a fallback) and written to their target paths:
+5. **Secrets Pulled Directly from Bitwarden, No Custom Scripts:** `[bootstrap.secrets]` declares logical names mapped to the env vars fnox populates from Bitwarden secure notes; `[bootstrap.files]`/`[dotfiles]` write them straight to their target paths with mise's own `secret()` template function, redacted from every plan, dry-run, and status output:
    - Your private OpenSSH key into `~/.ssh/id_ed25519`
    - Your SSH config into `~/.ssh/config`
-   - Your NextDNS config into `/etc/systemd/resolved.conf.d/nextdns.conf` (personal Linux only)
+   - Your NextDNS config into `/etc/systemd/resolved.conf.d/nextdns.conf` (personal Linux only), restarting `systemd-resolved` on change
 
-   Nothing sensitive is committed to this repository — Bitwarden's own access control is the only protection, with no separate encryption key to manage or rotate.
+   Nothing sensitive is committed to this repository — Bitwarden's own access control is the only protection, with no separate encryption key to manage or rotate. Without fnox, `mise bootstrap --prompt-secrets` prompts for any missing value interactively instead.
 6. **Automatic Remote Protocol Switch:** Boots anonymously via HTTPS, retrieves your SSH key from Bitwarden, and automatically flips the repository's git remote to `git@github.com:...` so future git operations are immediately ready for push.
 7. **Two Explicit Role Profiles:** `mise.toml` holds common tools/dotfiles/hooks; `mise.personal.toml` and `mise.work.toml` each hold everything else for that specific machine. Always loaded via an explicit `-E personal`/`-E work` flag.
 8. **Zero-Maintenance Upgrades:** A persistent daily systemd user timer on Linux automatically updates all desktop Flatpaks, Mise CLI tools (`mise upgrade --yes`), and Distrobox containers in the background.
@@ -122,19 +122,16 @@ systemctl reboot
        ↓
 [bootstrap.packages] (Flatpaks installed)
        ↓
-[bootstrap.hooks.post-packages] (Secret retrieval via fnox or Bitwarden CLI fallback)
+[bootstrap.files] (/etc system configs placed; SSH key/config & NextDNS config
+                    rendered from Bitwarden secrets via [bootstrap.secrets])
        ↓
-[bootstrap.files] (/etc system configs placed)
-       ↓
-[bootstrap.services] (System timers & user Podman socket started)
+[bootstrap.services] (System timers, systemd-resolved & user Podman socket started)
        ↓
 [dotfiles] (Configs linked, copied, and Tera templates rendered)
        ↓
 [bootstrap.linux.systemd.units] (Workstation auto-update timer & service deployed)
        ↓
 [tools] (CLI tools installed via mise)
-       ↓
-[bootstrap.hooks.post-tools] (SSH config & NextDNS config fetched from Bitwarden)
        ↓
 [bootstrap.hooks.final] (Flip Git origin to SSH & persist chosen profile)
 ```
@@ -147,15 +144,13 @@ systemctl reboot
 mise-bootstrap/
 ├── bootstrap.sh               # One-liner bootstrap entrypoint script
 ├── fnox.toml                  # Secret manager configuration (Bitwarden provider)
-├── mise.toml                  # Base layer: universal CLI tools, dotfiles, hooks (no role/OS content)
-├── mise.personal.toml         # Everything personal: tools, Flathub apps, /etc files, systemd timers
+├── mise.toml                  # Base layer: universal CLI tools, dotfiles, hooks, SSH secrets/files (no role/OS content)
+├── mise.personal.toml         # Everything personal: tools, Flathub apps, /etc files, NextDNS secret/file, systemd timers
 ├── mise.work.toml             # Everything work: tools, Homebrew casks/formulae, work identity
-├── scripts/                   # Modular bootstrap phase scripts
+├── scripts/                   # Modular bootstrap phase scripts (secrets are handled declaratively, not scripted)
 │   ├── linux/
 │   │   ├── pre-packages-config-flatpak-gnome.sh # Configures and prioritizes Flathub (Linux)
 │   │   └── pre-tools-podman-socket.sh           # Enables rootless Podman user socket
-│   ├── post-packages-fetch-secrets.sh           # Fetches SSH key from Bitwarden
-│   ├── post-tools-fetch-config-files.sh         # Fetches SSH config & NextDNS config from Bitwarden
 │   └── final.sh                                 # Switches git origin to SSH & persists profile
 ├── system_files/              # Privileged /etc system files (Linux)
 │   ├── rpm-ostreed.conf       # Staged background OS updates configuration
@@ -211,6 +206,7 @@ mise bootstrap
 
 | Task | Command |
 | :--- | :--- |
+| **Check secrets availability** | `mise bootstrap secrets status` |
 | **Inspect dotfiles status** | `mise bootstrap dotfiles status` |
 | **Preview dotfile diffs** | `mise bootstrap dotfiles diff` |
 | **Re-apply dotfiles only** | `mise bootstrap dotfiles apply` |

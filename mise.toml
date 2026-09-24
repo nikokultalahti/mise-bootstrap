@@ -12,6 +12,26 @@
 auto_update = true
 
 # ==============================================================================
+# SECRETS (mise bootstrap secrets status)
+# Resolved before any other bootstrap phase runs. Without fnox, 
+# `mise bootstrap --prompt-secrets` prompts for any missing value interactively instead.
+# ==============================================================================
+[bootstrap.secrets]
+github_ssh_key = "GITHUB_SSH_KEY"
+
+[bootstrap.directories."~/.ssh"]
+mode = "0700"
+
+[bootstrap.files."~/.ssh/id_ed25519"]
+content = "{{ secret(name=\"github_ssh_key\") }}"
+template = true
+mode = "0600"
+
+[bootstrap.files."~/.ssh/known_hosts"]
+content = "github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl\n"
+mode = "0644"
+
+# ==============================================================================
 # SHARED VARIABLES
 # email_personal/email_work live here (flat, role-suffixed keys) rather than
 # as a single "email" var in each role file: `mise dotfiles status` uses a
@@ -29,14 +49,6 @@ auto_update = true
 name = "Niko Kultalahti"
 email_personal = "hello@nikokultalahti.com"
 email_work = "niko.kultalahti@gapspgroup.com"
-
-# ============================================================================================
-# HOOK: POST-PACKAGES
-# Runs immediately AFTER bootstrap.packages.
-# Fetches secrets via fnox environment variables or falls back to Bitwarden CLI.
-# ============================================================================================
-[bootstrap.hooks.post-packages]
-run = "\"$HOME/Dev/mise-bootstrap/scripts/post-packages-fetch-secrets.sh\""
 
 # ==============================================================================
 # DOTFILES & TEMPLATES (mise bootstrap dotfiles apply)
@@ -116,17 +128,6 @@ fnox = "latest"
 "aqua:ajeetdsouza/zoxide" = "latest"
 "github:timrogers/litra-rs" = "latest"
 "github:timrogers/litra-autotoggle" = "latest"
-
-# ==============================================================================
-# HOOK: POST-TOOLS - FETCH CONFIG FILES FROM BITWARDEN
-# Places the SSH config and (personal + Linux only) NextDNS config, both
-# pulled directly from Bitwarden secure notes — no local encryption key
-# needed, unlike the age-based approach this replaced.
-# mise_env[0] ("personal"/"work") is passed through so the script can gate the
-# NextDNS part without needing its own role-detection logic.
-# ==============================================================================
-[bootstrap.hooks.post-tools]
-run = "\"$HOME/Dev/mise-bootstrap/scripts/post-tools-fetch-config-files.sh\" {{ mise_env[0] }}"
 
 # ==============================================================================
 # FINAL HOOK (mise bootstrap final-hook)

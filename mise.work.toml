@@ -11,6 +11,19 @@
 # ==============================================================================
 
 # ==============================================================================
+# SECRETS (mise bootstrap secrets status)
+# Resolved before any other bootstrap phase.
+# ==============================================================================
+
+[bootstrap.secrets]
+ssh_config_work = "SSH_CONFIG_WORK"
+
+[bootstrap.files."~/.ssh/config"]
+content = "{{ secret(name=\"ssh_config_work\") }}"
+template = true
+mode = "0600"
+
+# ==============================================================================
 # WORK SYSTEM PACKAGES (mise bootstrap packages apply)
 # Installed via Homebrew formulae and casks on macOS
 # ==============================================================================
