@@ -63,7 +63,7 @@ curl https://mise.run | sh
 mise -E work bootstrap --from https://github.com/nikokultalahti/mise-bootstrap.git --from-dir ~/Dev/mise-bootstrap --force-dotfiles
 ```
 - **Files loaded:** `mise.toml` (base) + `mise.work.toml` (everything work related)
-- **Automatic Persistence:** The final bootstrap hook (`scripts/final.sh`) automatically runs `mise settings set env <profile>`, writing it to `~/.config/mise/config.local.toml`. On all subsequent runs (`mise bootstrap`, `mise install`, `mise upgrade`), the machine stays in that environment without needing `-E` again.
+- **Automatic Persistence:** The final bootstrap hook (`scripts/final.sh`) automatically runs `mise settings set env <profile>`, writing it to `~/.config/mise/config.toml` — a real, untracked, machine-local file (this repo's own `mise.toml` is symlinked into `~/.config/mise/conf.d/` instead, precisely so it never collides with that write target). On all subsequent runs (`mise bootstrap`, `mise install`, `mise upgrade`), the machine stays in that environment without needing `-E` again.
 
 > If either machine's OS ever changes (e.g. work moves to Linux), the relevant role file is edited by hand at that point — there's deliberately no generic OS layer being maintained.
 

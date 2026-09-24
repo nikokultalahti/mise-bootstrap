@@ -33,9 +33,24 @@ run = "\"$HOME/Dev/mise-bootstrap/scripts/post-packages-fetch-secrets.sh\""
 # ==============================================================================
 [dotfiles]
 # --- Self-managing Mise configs ---
-"~/.config/mise/config.toml"          = { source = "mise.toml", mode = "symlink" }
-"~/.config/mise/config.personal.toml" = { source = "mise.personal.toml", mode = "symlink" }
-"~/.config/mise/config.work.toml"     = { source = "mise.work.toml", mode = "symlink" }
+# These three targets look inconsistent but each relies on a different mise
+# mechanism, verified directly against mise 2026.9.10 behavior:
+#
+# - mise.toml -> conf.d/mise-bootstrap.toml: conf.d/*.toml is loaded
+#   unconditionally, regardless of -E/persisted env — right for the common
+#   layer. It's NOT symlinked to config.toml itself because `mise settings set`
+#   (used by scripts/final.sh to persist the chosen profile) always writes to
+#   ~/.config/mise/config.toml by default; that path must stay a real,
+#   untracked, machine-local file, or every bootstrap run would dirty this
+#   tracked file with an `env = [...]` line.
+# - mise.personal.toml / mise.work.toml -> config.personal.toml /
+#   config.work.toml: this literal config.<env>.toml naming is what makes
+#   mise load a file only when -E <env> (or the persisted env setting)
+#   matches. Putting these in conf.d/ instead would load both roles' tools
+#   and packages on every machine at once — tested, confirmed unconditional.
+"~/.config/mise/conf.d/mise-bootstrap.toml" = { source = "mise.toml", mode = "symlink" }
+"~/.config/mise/config.personal.toml"       = { source = "mise.personal.toml", mode = "symlink" }
+"~/.config/mise/config.work.toml"           = { source = "mise.work.toml", mode = "symlink" }
 
 # --- Static Configuration Files ---
 "~/.config/atuin/config.toml"      = { source = "dotfiles/.config/atuin/config.toml", mode = "copy" }
