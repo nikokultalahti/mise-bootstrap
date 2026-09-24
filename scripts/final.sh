@@ -39,15 +39,14 @@ if [[ -d "$REPO_DIR/.git" ]]; then
 fi
 
 # ------------------------------------------------------------------------------
-# 2. Persist Work Profile if applicable
+# 2. Persist Profile (personal or work), so subsequent bare `mise bootstrap`/`mise install`
+#    calls don't need -E passed again.
 # ------------------------------------------------------------------------------
 MACHINE_TYPE="${1:-personal}"
 
-if [[ "$MACHINE_TYPE" == "work" ]]; then
-    echo "[-] Persisting work environment settings [-]"
-    mise settings set env work
-    echo "[✓] Machine permanently configured with 'work' profile in config.local.toml"
-fi
+echo "[-] Persisting '$MACHINE_TYPE' environment settings [-]"
+mise settings set env "$MACHINE_TYPE"
+echo "[✓] Machine permanently configured with '$MACHINE_TYPE' profile in config.local.toml"
 
 echo ""
 echo "=================================================================="

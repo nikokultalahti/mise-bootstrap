@@ -1,10 +1,10 @@
 # Declarative Workstation Bootstrap & Dotfiles with Mise
 
-A unified, declarative machine bootstrapper and dotfiles management system for **Fedora Silverblue** and **macOS**, powered natively by [**mise**](https://mise.jdx.dev).
+A unified, declarative machine bootstrapper and dotfiles management for **Fedora Silverblue** and **macOS**, powered by [**mise**](https://mise.jdx.dev).
 
-This repository provisions an entire developer workstation from scratch in a single command: desktop applications (Flatpaks), system-level configurations (`/etc`), rootless container sockets, shell dotfile templates, versioned CLI tools, and encrypted secrets.
+This repository provisions a workstation in a single command: desktop applications (Flatpaks), system-level configurations (`/etc`), rootless container sockets, shell dotfile templates, CLI tools, and encrypted secrets.
 
-> **Note:** Thoroughly tested on Fedora Silverblue; macOS support is structured and ready for platform overlays.
+> **Note:** Thoroughly tested on Fedora Silverblue; macOS not so much.
 
 ---
 
@@ -48,24 +48,24 @@ The script will:
 
 If you prefer to run the commands step-by-step:
 
+There are exactly two machines, and `-E` is always explicit — neither profile is an implicit default. Each role file (`mise.personal.toml` / `mise.work.toml`) contains *everything* for that machine (tools, packages, system files/services/hooks); there's no separate OS layer to reason about.
+
 #### Personal Machine (Linux):
-No `-E` flag is needed. `.miserc.toml` has `auto_env = true`, so `mise` automatically recognizes Linux and layers `mise.linux.toml` on top of `mise.toml` (which defaults to personal profile).
 ```bash
 curl https://mise.run | sh
-mise bootstrap --from https://github.com/nikokultalahti/mise-bootstrap.git --from-dir ~/Dev/mise-bootstrap --force-dotfiles
+mise -E personal bootstrap --from https://github.com/nikokultalahti/mise-bootstrap.git --from-dir ~/Dev/mise-bootstrap --force-dotfiles
 ```
-- **Files loaded:** `mise.toml` (base) + `mise.linux.toml` (platform & personal)
-- **What gets installed:** Common CLI tools, personal CLI tools (`yt-dlp`, `goose`, `fabric`, `talos`), 47 Flathub apps, Fedora system files (`/etc`), systemd timers, and personal dotfiles.
+- **Files loaded:** `mise.toml` (base) + `mise.personal.toml` (everything personal)
 
 #### Work Machine (macOS):
-The `-E work` flag specifies the work role profile. `.miserc.toml` automatically recognizes macOS and loads `mise.macos.toml`, while `-E work` loads `mise.work.toml` to override identity variables and install work packages and tools.
 ```bash
 curl https://mise.run | sh
 mise -E work bootstrap --from https://github.com/nikokultalahti/mise-bootstrap.git --from-dir ~/Dev/mise-bootstrap --force-dotfiles
 ```
-- **Files loaded:** `mise.toml` (base) + `mise.macos.toml` (platform) + `mise.work.toml` (work profile)
-- **What gets installed:** Common CLI tools, macOS Homebrew packages (`zsh-autosuggestions`, `zsh-syntax-highlighting`), work Homebrew casks & formulae (19 casks including `aerospace`, `raycast`, `gcloud-cli`, `ghostty`, `hermes-desktop`, `visual-studio-code`, plus `podman`, `hermes-agent`), work developer tools (`kubectl`, `k9s`, `terragrunt`, `opentofu`, `claude-code`, etc.), and work-tailored dotfiles (work email, Google Cloud SDK shell integrations, Bitbucket SSH rewrite).
-- **Automatic Persistence:** The final bootstrap hook (`scripts/final.sh`) automatically runs `mise settings set env work`, writing `env = "work"` to `~/.config/mise/config.local.toml`. On all subsequent runs (`mise bootstrap`, `mise install`, `mise upgrade`), your work Mac stays in the `work` environment without needing `-E work` again!
+- **Files loaded:** `mise.toml` (base) + `mise.work.toml` (everything work related)
+- **Automatic Persistence:** The final bootstrap hook (`scripts/final.sh`) automatically runs `mise settings set env <profile>`, writing it to `~/.config/mise/config.local.toml`. On all subsequent runs (`mise bootstrap`, `mise install`, `mise upgrade`), the machine stays in that environment without needing `-E` again.
+
+> If either machine's OS ever changes (e.g. work moves to Linux), the relevant role file is edited by hand at that point — there's deliberately no generic OS layer being maintained.
 
 During either run, secrets are fetched via fnox (using Bitwarden as the provider) or directly via Bitwarden CLI as a fallback. Your SSH key and `age` key are automatically extracted into place, system files are configured, dotfiles are deployed, tools are installed, and the git remote is flipped to SSH.
 
@@ -96,15 +96,15 @@ systemctl reboot
 ## Architecture & Core Philosophy
 
 1. **Zero-Sudo Initial Entry Point:** The setup begins entirely in user space over public HTTPS. Root privileges are never required upfront to clone or initialize the machine.
-2. **Immutable Host Boundary (Silverblue):** Keep host OS layering minimal. The immutable host is reserved strictly for the kernel, display server, GPU drivers, terminal emulator, multiplexer (`tmux`), and container runtimes (`podman`, `distrobox`).
+2. **Immutable Host Boundary (Silverblue):** Keep host OS layering minimal. 
 3. **GUI Applications via Flathub:** Desktop apps are installed exclusively from Flathub. Flathub builds bundle required codecs and runtimes, eliminating host package conflicts and dirty codec layering.
-4. **User-Space CLI Tooling:** Developer CLI binaries (`starship`, `atuin`, `eza`, `ripgrep`, `fzf`, `gh`, `age`, etc.) are installed directly into `~/.local/share/mise` via GitHub releases and Aqua registries rather than host package layers or Homebrew.
+4. **User-Space CLI Tooling:** Developer CLI binaries are installed into `~/.local/share/mise` rather than host package layers or Homebrew.
 5. **Zero-Knowledge Secret Recovery via Bitwarden:** During initial bootstrap, the Bitwarden Desktop Flatpak CLI interactively authenticates once to retrieve:
    - Your private OpenSSH key into `~/.ssh/id_ed25519`
    - Your `age` decryption key into `~/.config/age/dotfiles-age-key.txt`
-6. **Encrypted System Files in Public Git:** Sensitive system configs (such as `system_files/nextdns.age`) remain encrypted in git using `age`. Plaintext secrets never touch disk or git history unencrypted.
+6. **Encrypted System Files in Public Git:** Sensitive system configs remain encrypted in git using `age`. Plaintext secrets never touch disk or git history unencrypted.
 7. **Automatic Remote Protocol Switch:** Boots anonymously via HTTPS, retrieves your SSH key from Bitwarden, and automatically flips the repository's git remote to `git@github.com:...` so future git operations are immediately ready for push.
-8. **Layered Platform & Role Profiles:** Automatic OS detection (`auto_env = true` in `.miserc.toml`) dynamically separates universal tools (`mise.toml`), Linux Flatpaks & system configs (`mise.linux.toml`), macOS Homebrew packages (`mise.macos.toml`), and work profile overrides (`mise.work.toml`).
+8. **Two Explicit Role Profiles:** `mise.toml` holds common tools/dotfiles/hooks; `mise.personal.toml` and `mise.work.toml` each hold everything else for that specific machine. Always loaded via an explicit `-E personal`/`-E work` flag.
 9. **Zero-Maintenance Upgrades:** A persistent daily systemd user timer on Linux automatically updates all desktop Flatpaks, Mise CLI tools (`mise upgrade --yes`), and Distrobox containers in the background.
 
 ---
@@ -130,27 +130,10 @@ systemctl reboot
        ↓
 [tools] (CLI tools installed via mise)
        ↓
-[bootstrap.hooks.post-tools] (Stream-decrypt secrets via age)
+[bootstrap.hooks.post-tools] (Decrypt secrets via age)
        ↓
-[bootstrap.hooks.final] (Flip Git origin to SSH & persist work profile)
+[bootstrap.hooks.final] (Flip Git origin to SSH & persist chosen profile)
 ```
-
-- **Pre-Packages Hook (`scripts/pre-packages.sh`):** Ensures the official Flathub remote is prioritized (`--prio=10`) and deprioritizes Fedora's filtered Flatpak remote (`--prio=1`).
-- **System Packages (`[bootstrap.packages]`):** Installs desktop Flatpaks (Bitwarden, Commit, Firefox, Thunderbird, Obsidian, Signal, Pods, Flatseal, etc.).
-- **Post-Packages Hook (`scripts/post-packages.sh`):** 
-  - Enables GNOME Software automatic background updates.
-  - Fetches `~/.ssh/id_ed25519` and your `age` key from fnox environment variables (`GITHUB_SSH_KEY`, `DOTFILES_AGE_KEY`), or falls back to Bitwarden CLI if fnox is not used.
-  - Pre-seeds `github.com` into `~/.ssh/known_hosts`.
-- **System Files (`[bootstrap.files]`):** Declaratively manages `/etc/rpm-ostreed.conf` and `/etc/yum.repos.d/vscode.repo` owned by `root`.
-- **System Services (`[bootstrap.services]`):** Enables `rpm-ostreed-automatic.timer` (background OS update staging) and the user-level rootless `podman.socket` (for Dev Containers).
-- **Dotfiles & Templates (`[dotfiles]`):**
-  - Symlinks `~/.config/mise/config.toml` back to `~/Dev/mise-bootstrap/mise.toml` (self-managing config).
-  - Copies static configs (`atuin`, `bat`, `tealdeer`, `.bashrc`).
-  - Renders dynamic Tera templates into `$HOME` (`.zshrc`, `.zprofile`, `.gitconfig`, `vscode/settings.json`).
-- **Linux Systemd User Units (`[bootstrap.linux.systemd.units]`):** Deploys and enables `workstation-auto-update.timer` to automatically update Flatpaks, Mise tools, and Distrobox containers daily.
-- **Tools (`[tools]`):** Installs developer CLI utilities (universal: `age`, `starship`, `atuin`, `eza`, `fd`, `fzf`, `gh`, `helix`, `jq`, `ripgrep`, `sops`, `television`, `zoxide`, `litra-rs`; personal: `yt-dlp`, `goose`, `fabric`, `talos`; work: `kubectl`, `k9s`, `terragrunt`, `opentofu`, `claude-code`, etc.).
-- **Post-Tools Hook (`scripts/post-tools.sh`):** Uses `mise exec -- age` to stream-decrypt encrypted configuration secrets (`~/.ssh/config`, `nextdns.conf`).
-- **Final Hook (`scripts/final.sh`):** Rewrites the repository remote from HTTPS to `git@github.com:...` and, if bootstrapping on a work machine, runs `mise settings set env work` to persist the profile.
 
 ---
 
@@ -159,12 +142,10 @@ systemctl reboot
 ```text
 mise-bootstrap/
 ├── bootstrap.sh               # One-liner bootstrap entrypoint script
-├── .miserc.toml               # Early-init config (auto_env = true for OS detection)
 ├── fnox.toml                  # Secret manager configuration (Bitwarden provider)
-├── mise.toml                  # Base layer: universal CLI tools, baseline dotfiles, personal defaults
-├── mise.linux.toml            # Linux platform layer: Flatpaks, /etc system files, systemd timers
-├── mise.macos.toml            # macOS platform layer: Homebrew packages, macOS tools
-├── mise.work.toml             # Work profile layer: work email, gcloud, work settings
+├── mise.toml                  # Base layer: universal CLI tools, dotfiles, hooks (no role/OS content)
+├── mise.personal.toml         # Everything personal: tools, Flathub apps, /etc files, systemd timers
+├── mise.work.toml             # Everything work: tools, Homebrew casks/formulae, work identity
 ├── scripts/                   # Modular bootstrap phase scripts
 │   ├── pre-packages.sh        # Configures and prioritizes Flathub (Linux)
 │   ├── post-packages.sh       # Fetches Bitwarden secrets & enables auto-updates
@@ -214,7 +195,7 @@ Your bootstrap and dotfiles repository lives at `~/Dev/mise-bootstrap` as a stan
    ```
 
 ### Updating on Another Machine
-To pull and apply the latest configurations on another computer:
+To pull and apply the latest configurations on another computer where already initialized:
 ```bash
 cd ~/Dev/mise-bootstrap
 git pull

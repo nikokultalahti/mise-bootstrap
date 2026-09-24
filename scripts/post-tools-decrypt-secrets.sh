@@ -4,12 +4,14 @@ set -euo pipefail
 # ==============================================================================
 # HOOK: POST-TOOLS
 # Decrypts secrets using age immediately after tools are installed.
-# 1. Decrypts User SSH Config (~/.ssh/config)
-# 2. Decrypts System NextDNS Config (Linux only: /etc/systemd/resolved.conf.d/)
+# 1. Decrypts User SSH Config (~/.ssh/config) - all machines
+# 2. Decrypts System NextDNS Config - Linux AND personal only
 # ==============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+MACHINE_TYPE="${1:-personal}"
 
 AGE_KEY="$HOME/.config/age/dotfiles-age-key.txt"
 
@@ -42,7 +44,7 @@ if [[ -f "$ENCRYPTED_SSH" ]]; then
 fi
 
 # ------------------------------------------------------------------------------
-# 2. Decrypt System NextDNS Config (Linux only: /etc/systemd/resolved.conf.d/)
+# 2. Decrypt System NextDNS Config (Linux + personal only: /etc/systemd/resolved.conf.d/)
 # ------------------------------------------------------------------------------
 ENCRYPTED_DNS="$REPO_DIR/system_files/nextdns.age"
 if [[ ! -f "$ENCRYPTED_DNS" ]]; then
@@ -54,7 +56,7 @@ if [[ ! -f "$ENCRYPTED_DNS" ]]; then
 fi
 DECRYPTED_DNS="/etc/systemd/resolved.conf.d/nextdns.conf"
 
-if [[ "$(uname -s)" == "Linux" && -f "$ENCRYPTED_DNS" ]]; then
+if [[ "$(uname -s)" == "Linux" && "$MACHINE_TYPE" == "personal" && -f "$ENCRYPTED_DNS" ]]; then
     echo "[-] Configuring NextDNS in systemd-resolved [-]"
 
     # Stream decrypt directly into destination (no plaintext ever touches /tmp)

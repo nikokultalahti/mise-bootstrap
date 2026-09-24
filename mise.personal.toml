@@ -1,7 +1,12 @@
 # ==============================================================================
-# MISE LINUX PLATFORM & PERSONAL CONFIGURATION (Fedora Silverblue)
-# Loaded automatically on Linux via auto_env
+# MISE PERSONAL PROFILE (Fedora Silverblue)
+# Activated via: mise -E personal bootstrap
+# Everything for the personal machine lives here.
+ The assumption is that Linux is used as personal machine.
 # ==============================================================================
+[vars]
+email = "hello@nikokultalahti.com"
+machine_type = "personal"
 
 # ==============================================================================
 # HOOK: PRE-PACKAGES
@@ -13,11 +18,19 @@
 run = "\"$HOME/Dev/mise-bootstrap/scripts/linux/pre-packages-config-flatpak-gnome.sh\""
 
 # ==============================================================================
-# SYSTEM PACKAGES (mise bootstrap packages apply)
-# Guaranteed to install exclusively from Flathub
+# PERSONAL CLI TOOLS (mise install)
+# ==============================================================================
+[tools]
+"github:yt-dlp/yt-dlp" = "latest"
+"github:aaif-goose/goose" = "latest"
+"github:danielmiessler/fabric" = "latest"
+"aqua:siderolabs/talos" = "latest"
+
+# ==============================================================================
+# PERSONAL PACKAGES (mise bootstrap packages apply)
+# Guaranteed to install exclusively from Flathub.
 # ==============================================================================
 [bootstrap.packages]
-# --- Linux Flatpaks (Flathub) ---
 "flatpak:org.gtk.Gtk3theme.adw-gtk3" = "latest"
 "flatpak:org.gtk.Gtk3theme.adw-gtk3-dark" = "latest"
 "flatpak:org.gnome.Firmware" = "latest"
@@ -25,32 +38,26 @@ run = "\"$HOME/Dev/mise-bootstrap/scripts/linux/pre-packages-config-flatpak-gnom
 "flatpak:io.github.flattool.Warehouse" = "latest"
 "flatpak:com.mattjakeman.ExtensionManager" = "latest"
 "flatpak:io.github.flattool.Ignition" = "latest"
-"flatpak:io.gitlab.adhami3310.Impression" = "latest"
-"flatpak:org.gnome.World.PikaBackup" = "latest"
-"flatpak:page.tesk.Refine" = "latest"
 "flatpak:io.github.getnf.embellish" = "latest"
 "flatpak:com.bitwarden.desktop" = "latest"
-"flatpak:com.github.marhkb.Pods" = "latest"
-"flatpak:org.gnome.Boxes" = "latest"
-"flatpak:com.ranfdev.DistroShelf" = "latest"
 "flatpak:org.mozilla.firefox" = "latest"
-"flatpak:org.mozilla.thunderbird_esr" = "latest"
 "flatpak:org.libreoffice.LibreOffice" = "latest"
+"flatpak:be.alexandervanhee.gradia" = "latest"
+"flatpak:com.yubico.yubioath" = "latest"
+"flatpak:page.tesk.Refine" = "latest"
+"flatpak:io.gitlab.adhami3310.Impression" = "latest"
+"flatpak:org.gnome.World.PikaBackup" = "latest"
 "flatpak:dev.qwery.AddWater" = "latest"
 "flatpak:io.github.qwersyk.Newelle" = "latest"
 "flatpak:app.drey.Dialect" = "latest"
-"flatpak:be.alexandervanhee.gradia" = "latest"
 "flatpak:cafe.avery.Delfin" = "latest"
 "flatpak:com.github.PintaProject.Pinta" = "latest"
-"flatpak:com.github.jeromerobert.pdfarranger" = "latest"
 "flatpak:com.nextcloud.desktopclient.nextcloud" = "latest"
-"flatpak:com.yubico.yubioath" = "latest"
 "flatpak:de.haeckerfelix.Fragments" = "latest"
 "flatpak:de.schmidhuberj.tubefeeder" = "latest" # Pipeline
 "flatpak:org.nickvision.tubeconverter" = "latest" # Parabolic
 "flatpak:dev.geopjr.Tuba" = "latest"
 "flatpak:io.github.alainm23.planify" = "latest"
-"flatpak:md.obsidian.Obsidian" = "latest"
 "flatpak:org.gnome.World.Iotas" = "latest"
 "flatpak:org.gnome.gitlab.cheywood.Pulp" = "latest"
 "flatpak:org.gnome.gitlab.somas.Apostrophe" = "latest"
@@ -59,22 +66,19 @@ run = "\"$HOME/Dev/mise-bootstrap/scripts/linux/pre-packages-config-flatpak-gnom
 "flatpak:app.fotema.Fotema" = "latest"
 "flatpak:com.github.maoschanz.drawing" = "latest"
 "flatpak:io.gitlab.adhami3310.Converter" = "latest"
+"flatpak:org.mozilla.thunderbird_esr" = "latest"
+"flatpak:com.github.jeromerobert.pdfarranger" = "latest"
 "flatpak:page.codeberg.censor.Censor" = "latest"
+"flatpak:md.obsidian.Obsidian" = "latest"
 
 # --- Dev Tools ---
 "flatpak:dev.zed.Zed" = "latest"
 "flatpak:re.sonny.Commit" = "latest"
 "flatpak:me.iepure.devtoolbox" = "latest"
 "flatpak:com.mardojai.ForgeSparks" = "latest"
-
-# ==============================================================================
-# PERSONAL CLI TOOLS (Linux)
-# ==============================================================================
-[tools]
-"github:yt-dlp/yt-dlp" = "latest"
-"github:aaif-goose/goose" = "latest"
-"github:danielmiessler/fabric" = "latest"
-"aqua:siderolabs/talos" = "latest"
+"flatpak:com.github.marhkb.Pods" = "latest"
+"flatpak:org.gnome.Boxes" = "latest"
+"flatpak:com.ranfdev.DistroShelf" = "latest"
 
 # ==============================================================================
 # SYSTEM FILES (mise bootstrap files apply)
@@ -92,7 +96,8 @@ source = "system_files/vscode.repo"
 owner = "root"
 mode = "0644"
 
-# Ensure the directory exists for NextDNS config
+# NextDNS config directory. Actual file placement is further gated by
+# machine_type inside scripts/post-tools-decrypt-secrets.sh.
 [bootstrap.directories."/etc/systemd/resolved.conf.d"]
 owner = "root"
 mode = "0755"

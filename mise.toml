@@ -1,8 +1,12 @@
 # ==============================================================================
 # MISE MASTER CONFIGURATION (Base Layer)
-# Shared across all platforms (Linux/macOS) and roles (Personal/Work).
-# Platform layers (mise.linux.toml, mise.macos.toml) load automatically via auto_env.
-# Role overrides (mise.work.toml) activate via: mise -E work bootstrap
+# Shared across both machines (personal and work).
+# Role layers (mise.personal.toml / mise.work.toml) both activate explicitly
+# via -E personal / -E work — neither is an implicit default, so email and
+# machine_type live in the role files, not here. Each role file contains
+# everything for that machine (tools, packages, system files/services/hooks)
+# rather than being split further by OS — see mise.personal.toml's and
+# mise.work.toml's own comments for why.
 # ==============================================================================
 
 [settings]
@@ -10,13 +14,11 @@ age.key_file = "$HOME/.config/age/dotfiles-age-key.txt"
 auto_update = true
 
 # ==============================================================================
-# DEFAULT VARIABLES (Personal Profile)
-# Overridden in mise.work.toml when -E work is passed
+# SHARED VARIABLES
+# email/machine_type are role-specific — see mise.personal.toml / mise.work.toml
 # ==============================================================================
 [vars]
 name = "Niko Kultalahti"
-email = "hello@nikokultalahti.com"
-machine_type = "personal"
 
 # ============================================================================================
 # HOOK: POST-PACKAGES
@@ -31,11 +33,9 @@ run = "\"$HOME/Dev/mise-bootstrap/scripts/post-packages-fetch-secrets.sh\""
 # ==============================================================================
 [dotfiles]
 # --- Self-managing Mise configs ---
-"~/.config/mise/config.toml"       = { source = "mise.toml", mode = "symlink" }
-"~/.config/mise/config.linux.toml" = { source = "mise.linux.toml", mode = "symlink" }
-"~/.config/mise/config.macos.toml" = { source = "mise.macos.toml", mode = "symlink" }
-"~/.config/mise/config.work.toml"  = { source = "mise.work.toml", mode = "symlink" }
-"~/.config/mise/miserc.toml"       = { source = ".miserc.toml", mode = "symlink" }
+"~/.config/mise/config.toml"          = { source = "mise.toml", mode = "symlink" }
+"~/.config/mise/config.personal.toml" = { source = "mise.personal.toml", mode = "symlink" }
+"~/.config/mise/config.work.toml"     = { source = "mise.work.toml", mode = "symlink" }
 
 # --- Static Configuration Files ---
 "~/.config/atuin/config.toml"      = { source = "dotfiles/.config/atuin/config.toml", mode = "copy" }
@@ -94,11 +94,13 @@ fnox = "latest"
 "github:timrogers/litra-autotoggle" = "latest"
 
 # ==============================================================================
-# HOOK: POST-TOOLSDECRYPT SYSTEM SECRETS
-# Decrypts secrets using age immediately after tools are installed
+# HOOK: POST-TOOLS - DECRYPT SYSTEM SECRETS
+# Decrypts secrets using age immediately after tools are installed.
+# machine_type is passed through so the script can gate the NextDNS part
+# (personal + Linux only) without needing its own role-detection logic.
 # ==============================================================================
 [bootstrap.hooks.post-tools]
-run = "\"$HOME/Dev/mise-bootstrap/scripts/post-tools-decrypt-secrets.sh\""
+run = "\"$HOME/Dev/mise-bootstrap/scripts/post-tools-decrypt-secrets.sh\" {{ vars.machine_type }}"
 
 # ==============================================================================
 # FINAL HOOK (mise bootstrap final-hook)
