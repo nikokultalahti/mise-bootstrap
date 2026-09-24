@@ -1,6 +1,11 @@
 # ==============================================================================
-# MISE WORK PROFILE OVERRIDES
+# MISE WORK PROFILE (macOS)
 # Activated via: mise -E work bootstrap
+# Everything for the work machine lives here — tools, packages. Not split by
+# OS: work is macOS today, and if that ever changes (e.g. work moves to
+# Linux), this file gets edited by hand at that point (the brew:/brew-cask:
+# entries below would need flatpak: equivalents) rather than maintained as a
+# generic "any macOS machine" layer in the meantime.
 # ==============================================================================
 [vars]
 email = "niko.kultalahti@gapspgroup.com"
@@ -12,6 +17,8 @@ machine_type = "work"
 # ==============================================================================
 [bootstrap.packages]
 # --- Homebrew Formulae ---
+"brew:zsh-autosuggestions" = "latest"
+"brew:zsh-syntax-highlighting" = "latest"
 "brew:hermes-agent" = "latest"
 "brew:googleworkspace-cli" = "latest"
 "brew:podman" = "latest"

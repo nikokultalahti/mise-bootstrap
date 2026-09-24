@@ -94,24 +94,22 @@ echo "  2) Work (macOS)"
 read -r -p "Enter choice [1/2, default: 1]: " CHOICE
 CHOICE="${CHOICE:-1}"
 
-BOOTSTRAP_ENV_FLAG=""
 if [ "$CHOICE" = "2" ] || [ "$CHOICE" = "work" ]; then
     echo "[✓] Selected Work profile (-E work)"
     BOOTSTRAP_ENV_FLAG="-E work"
 else
-    echo "[✓] Selected Personal profile"
+    echo "[✓] Selected Personal profile (-E personal)"
+    BOOTSTRAP_ENV_FLAG="-E personal"
 fi
 
 # ------------------------------------------------------------------------------
 # 6. Run Bootstrap via fnox
 # ------------------------------------------------------------------------------
+# Always explicit: personal and work are both real profiles now
+# (mise.personal.toml / mise.work.toml), neither is an implicit default.
 echo ""
 echo "[-] Running bootstrap through fnox..."
-if [ -n "$BOOTSTRAP_ENV_FLAG" ]; then
-    fnox exec -- mise "$BOOTSTRAP_ENV_FLAG" bootstrap --force-dotfiles
-else
-    fnox exec -- mise bootstrap --force-dotfiles
-fi
+fnox exec -- mise "$BOOTSTRAP_ENV_FLAG" bootstrap --force-dotfiles
 
 echo ""
 echo "=================================================================="
